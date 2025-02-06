@@ -114,12 +114,12 @@ public sealed class PlaybackService : IPlaybackService
             mediaPlayer = new MediaPlayer(libVCL).DisposeWith(disposable);
 
             volumeSetSubject
-                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Throttle(TimeSpan.FromMilliseconds(100))
                 .Subscribe(volume => mediaPlayer.Volume = volume)
                 .DisposeWith(disposable);
 
             positionSetSubject
-                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Throttle(TimeSpan.FromMilliseconds(100))
                 .Subscribe(position => mediaPlayer.Time = position)
                 .DisposeWith(disposable);
 
@@ -219,6 +219,8 @@ public sealed class PlaybackService : IPlaybackService
 
         audioTrackSubject.OnNext(mediaPlayer.AudioTrack);
         subtitleTrackSubject.OnNext(mediaPlayer.Spu);
+
+        mediaFileNameSubject.OnNext(mediaPlayer.Media.Meta(MetadataType.Title));
 
         trackLoadingStatus = null;
     }

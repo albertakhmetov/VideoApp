@@ -21,6 +21,7 @@ namespace VideoApp.Views;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using LibVLCSharp.Platforms.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -34,15 +35,22 @@ using Windows.Storage;
 public sealed partial class PlayerView : UserControl
 {
     private readonly IPlaybackService playbackService;
+    private readonly PlayerControlView playerControl;
 
     private CompositeDisposable? disposable;
     private IDisposable? notificationDisposable;
 
-    public PlayerView(IPlaybackService playbackService, PlayerViewModel viewModel)
+    public PlayerView(
+        IServiceProvider serviceProvider, 
+        IPlaybackService playbackService,
+        PlayerViewModel viewModel)
     {
         this.playbackService = playbackService.NotNull();
+        this.playerControl = serviceProvider.GetRequiredService<PlayerControlView>();
 
         this.InitializeComponent();
+
+        ControlPanel.Child = playerControl;
 
         ViewModel = viewModel.NotNull();
 
@@ -76,7 +84,7 @@ public sealed partial class PlayerView : UserControl
         e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
     }
 
-    private bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen;
+    private bool IsFlyoutOpen => playerControl.IsFlyoutOpen;
 
     private void PlayerView_Loaded(object sender, RoutedEventArgs e)
     {
@@ -104,7 +112,7 @@ public sealed partial class PlayerView : UserControl
             .DisposeWith(disposable);
 
         activity
-            .Throttle(TimeSpan.FromSeconds(2))
+            .Throttle(TimeSpan.FromSeconds(1.2))
             .ObserveOn(SynchronizationContext.Current)
             .Where(_ => !inTheBar && !IsFlyoutOpen)
             .Subscribe(_ => NewMethod())
@@ -178,7 +186,7 @@ public sealed partial class PlayerView : UserControl
             case Windows.System.VirtualKey.Space:
                 if (e.OriginalSource is Control control == false || control.FocusState == FocusState.Unfocused)
                 {
-                    ViewModel.TogglePlaybackCommand.Execute(null);
+                  //  ViewModel.TogglePlaybackCommand.Execute(null);
                     return true;
                 }
                 else

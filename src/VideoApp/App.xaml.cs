@@ -19,6 +19,9 @@
 namespace VideoApp;
 
 using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI;
@@ -27,16 +30,20 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using VideoApp.Commands;
+using VideoApp.Core;
 using VideoApp.Core.Commands;
 using VideoApp.Core.Services;
 using VideoApp.Core.ViewModels;
 using VideoApp.Services;
+using VideoApp.Views;
 using WinRT.Interop;
 
 public partial class App : Application, IApp
 {
-    private IHost host;
+    private IHost? host;
     private MainWindow? mainWindow;
+
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     public App()
     {
@@ -79,6 +86,36 @@ public partial class App : Application, IApp
 
         var view = host.Services.GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
         mainWindow.Content = view;
+
+        host.Services.GetRequiredService<IPlaybackService>()
+            .MediaFileName
+            .ObserveOn(SynchronizationContext.Current!)
+            .Subscribe(SetTitle)
+            .DisposeWith(disposable);
+    }
+
+    private void SetTitle(string? fileName)
+    {
+        if(mainWindow == null)
+        {
+            return;
+        }
+
+        var sb = new StringBuilder();
+
+        if (fileName != null)
+        {
+            sb.Append(Path.GetFileNameWithoutExtension(fileName));
+        }
+
+        if (sb.Length > 0)
+        {
+            sb.Append(" - ");
+        }
+
+        sb.Append("VideoApp");
+
+        mainWindow.Title = sb.ToString();
     }
 
     private void OnMainWindowClosed(object sender, WindowEventArgs args)
@@ -94,11 +131,12 @@ public partial class App : Application, IApp
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
-        //builder.Services.AddSingleton<IMessagesService, MessagesService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
+        builder.Services.AddTransient<PlayerControlViewModel>();
 
-        builder.Services.AddKeyedSingleton<UserControl, Views.PlayerView>(nameof(PlayerViewModel));
+        builder.Services.AddSingleton<PlayerControlView>();
+        builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));
 
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));
 
