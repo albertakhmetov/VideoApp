@@ -40,6 +40,8 @@ public sealed class PlaybackService : IPlaybackService
     private readonly BehaviorSubject<long> durationSubject, positionSubject;
     private readonly BehaviorSubject<int> volumeSubject;
 
+    private readonly Subject<int> volumeSetSubject;
+
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
 
@@ -58,6 +60,8 @@ public sealed class PlaybackService : IPlaybackService
 
         audioTrackSubject = new BehaviorSubject<int>(-1);
         subtitleTrackSubject = new BehaviorSubject<int>(-1);
+
+        volumeSetSubject = new Subject<int>();
 
         MediaFileName = mediaFileNameSubject.AsObservable();
         State = stateSubject.AsObservable();
@@ -106,6 +110,10 @@ public sealed class PlaybackService : IPlaybackService
 
             libVCL = new LibVLC(options).DisposeWith(disposable);
             mediaPlayer = new MediaPlayer(libVCL).DisposeWith(disposable);
+
+            volumeSetSubject
+                .Subscribe(volume => mediaPlayer.Volume = volume)
+                .DisposeWith(disposable);
 
             Observable
                 .FromEventPattern<MediaPlayerMediaChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.MediaChanged))
@@ -164,7 +172,7 @@ public sealed class PlaybackService : IPlaybackService
 
     private void Load(Media m)
     {
-        if(disposable == null)
+        if (disposable == null)
         {
             throw new InvalidOperationException();
         }
@@ -284,14 +292,17 @@ public sealed class PlaybackService : IPlaybackService
             return false;
         }
 
-        if (Math.Abs(value - mediaPlayer.Volume) < 1)
+        var newValue = Math.Max(0, Math.Min(100, value));
+
+        if (volumeSubject.Value != newValue)
+        {
+            volumeSetSubject.OnNext(newValue);
+            return true;
+        }
+        else
         {
             return false;
         }
-
-        mediaPlayer.Volume = Math.Max(0, Math.Min(100, value));
-
-        return true;
     }
 
     public bool SetAudioTrack(int value)

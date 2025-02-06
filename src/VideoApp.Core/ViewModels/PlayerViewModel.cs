@@ -70,7 +70,7 @@ public class PlayerViewModel : ViewModel
         playbackService
             .Volume
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Volume = x)
+            .Subscribe(x => Set(ref volume, x, nameof(Volume)))
             .DisposeWith(disposable);
 
         playbackService
@@ -164,15 +164,7 @@ public class PlayerViewModel : ViewModel
     public int Volume
     {
         get => volume;
-        set
-        {
-            if (Set(ref volume, value))
-            {
-                // set a new value to the playback service
-                // the playback service can ignore value that were created by him
-                playbackService.SetVolume(value);
-            }
-        }
+        set => playbackService.SetVolume(value);
     }
 
     public bool IsInitialized
