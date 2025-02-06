@@ -41,6 +41,7 @@ public sealed class PlaybackService : IPlaybackService
     private readonly BehaviorSubject<int> volumeSubject;
 
     private readonly Subject<int> volumeSetSubject;
+    private readonly Subject<long> positionSetSubject;
 
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
@@ -62,6 +63,7 @@ public sealed class PlaybackService : IPlaybackService
         subtitleTrackSubject = new BehaviorSubject<int>(-1);
 
         volumeSetSubject = new Subject<int>();
+        positionSetSubject = new Subject<long>();
 
         MediaFileName = mediaFileNameSubject.AsObservable();
         State = stateSubject.AsObservable();
@@ -112,7 +114,13 @@ public sealed class PlaybackService : IPlaybackService
             mediaPlayer = new MediaPlayer(libVCL).DisposeWith(disposable);
 
             volumeSetSubject
+                .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(volume => mediaPlayer.Volume = volume)
+                .DisposeWith(disposable);
+
+            positionSetSubject
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Subscribe(position => mediaPlayer.Time = position)
                 .DisposeWith(disposable);
 
             Observable
@@ -268,35 +276,56 @@ public sealed class PlaybackService : IPlaybackService
         mediaPlayer?.Stop();
     }
 
-    public bool SetPosition(long value)
+    public bool SetPosition(double position)
+    {
+        return SetPosition(Convert.ToInt64(position));
+    }
+
+    public bool SetPosition(long position)
     {
         if (!IsInitialized || mediaPlayer == null)
         {
             return false;
         }
 
-        if (Math.Abs(value - mediaPlayer.Time) < 1000)
+        if (Math.Abs(position - positionSubject.Value) < 1000)
         {
             return false;
         }
 
-        mediaPlayer.Time = value;
-
+        positionSetSubject.OnNext(position);
         return true;
     }
 
-    public bool SetVolume(int value)
+    public bool SetVolume(int volume)
     {
         if (!IsInitialized || mediaPlayer == null)
         {
             return false;
         }
 
-        var newValue = Math.Max(0, Math.Min(100, value));
+        var newVolume = Math.Max(0, Math.Min(100, volume));
 
-        if (volumeSubject.Value != newValue)
+        if (volumeSubject.Value == newVolume)
         {
-            volumeSetSubject.OnNext(newValue);
+            return false;
+        }
+
+        volumeSetSubject.OnNext(newVolume);
+        return true;
+    }
+
+    public bool SetAudioTrack(int trackId)
+    {
+        if (!IsInitialized || mediaPlayer == null)
+        {
+            return false;
+        }
+
+        if (mediaPlayer.AudioTrackDescription.Any(x => x.Id == trackId))
+        {
+            mediaPlayer.SetAudioTrack(trackId);
+            audioTrackSubject.OnNext(trackId);
             return true;
         }
         else
@@ -305,36 +334,17 @@ public sealed class PlaybackService : IPlaybackService
         }
     }
 
-    public bool SetAudioTrack(int value)
+    public bool SetSubtitleTrack(int trackId)
     {
         if (!IsInitialized || mediaPlayer == null)
         {
             return false;
         }
 
-        if (mediaPlayer.AudioTrackDescription.Any(x => x.Id == value))
+        if (mediaPlayer.SpuDescription.Any(x => x.Id == trackId))
         {
-            mediaPlayer.SetAudioTrack(value);
-            audioTrackSubject.OnNext(value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public bool SetSubtitleTrack(int value)
-    {
-        if (!IsInitialized || mediaPlayer == null)
-        {
-            return false;
-        }
-
-        if (mediaPlayer.SpuDescription.Any(x => x.Id == value))
-        {
-            mediaPlayer.SetSpu(value);
-            subtitleTrackSubject.OnNext(value);
+            mediaPlayer.SetSpu(trackId);
+            subtitleTrackSubject.OnNext(trackId);
             return true;
         }
         else

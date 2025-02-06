@@ -56,11 +56,13 @@ public interface IPlaybackService : IDisposable
 
     void Stop();
 
-    bool SetPosition(long value);
+    bool SetPosition(double position);
 
-    bool SetVolume(int value);
+    bool SetPosition(long position);
 
-    bool SetAudioTrack(int value);
+    bool SetVolume(int volume);
 
-    bool SetSubtitleTrack(int value);
+    bool SetAudioTrack(int trackId);
+
+    bool SetSubtitleTrack(int trackId);
 }

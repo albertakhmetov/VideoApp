@@ -200,9 +200,8 @@ public sealed partial class PlayerView : UserControl
             .ObserveOn(SynchronizationContext.Current!)
             .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
 
-        var volume = (ViewModel.Volume / 5) * 5;
+        ViewModel.AdjustVolumeCommand.Execute(direction);
 
-        ViewModel.Volume = volume + Math.Sign(direction) * 5;
         VisualStateManager.GoToState(this, "VolumeNotification", true);
     }
     private void SkipPosition(int direction)

@@ -67,6 +67,8 @@
         <Border Name="VolumeOsd"
                 Opacity="0"
                 Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                BorderThickness="1"
                 CornerRadius="8"
                 Padding="16,6"
                 Margin="8"
@@ -89,6 +91,8 @@
         <Border Name="SkipOsd"
                 Opacity="0"
                 Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                BorderThickness="1"
                 CornerRadius="8"
                 Padding="16,6"
                 Margin="8"
@@ -120,10 +124,11 @@
             x:Name="ControlPanel"
             MaxWidth="800"
             Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Margin="8"
-            Padding="8"
+            Padding="4,4"
             VerticalAlignment="Bottom">
             <Grid>
                 <Grid.RowDefinitions>

@@ -64,7 +64,7 @@ public class PlayerViewModel : ViewModel
         playbackService
             .Position
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Position = x)
+            .Subscribe(x => Set(ref position, x, nameof(Position)))
             .DisposeWith(disposable);
 
         playbackService
@@ -115,8 +115,31 @@ public class PlayerViewModel : ViewModel
         TogglePlaybackCommand = new RelayCommand(_ => TooglePlayback());
         ToggleFullScreenCommand = new RelayCommand(x => app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
-        SkipBackCommand = new RelayCommand(_ => Position = Math.Max(0, Position - 10 * 1000));
-        SkipForwardCommand = new RelayCommand(_ => Position = Math.Min(Duration - 1, Position + 30 * 1000));
+        SkipBackCommand = new RelayCommand(_ => AdjustPosition(-10));
+        SkipForwardCommand = new RelayCommand(_ => AdjustPosition(+30));
+
+        AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
+    }
+
+    private void AdjustPosition(int delta)
+    {
+        var newPosition = Math.Min(Duration - 1, Math.Max(0, Position + delta * 1000));
+
+        Set(ref position, newPosition, nameof(Position));
+        playbackService.SetPosition(newPosition);
+    }
+
+    private void AdjustVolume(int direction)
+    {
+        if (direction == 0)
+        {
+            return;
+        }
+
+        var newVolume = (Volume / 5) * 5;
+
+        Set(ref volume, newVolume, nameof(Volume));
+        playbackService.SetVolume(newVolume + Math.Sign(direction) * 5);
     }
 
     private async void TooglePlayback()
@@ -151,14 +174,7 @@ public class PlayerViewModel : ViewModel
     public double Position
     {
         get => position;
-        set
-        {
-            Set(ref position, value);
-
-            // set a new position to the playback service
-            // the playback service can ignore positions that were created by him
-            playbackService.SetPosition(Convert.ToInt64(value));
-        }
+        set => playbackService.SetPosition(value);
     }
 
     public int Volume
@@ -228,6 +244,8 @@ public class PlayerViewModel : ViewModel
     public ICommand SkipBackCommand { get; }
 
     public ICommand SkipForwardCommand { get; }
+
+    public ICommand AdjustVolumeCommand { get; }
 
     public CommandBase OpenMediaFileCommand { get; }
 
