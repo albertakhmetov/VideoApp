@@ -33,6 +33,13 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<!-- Use our own Main entry point so we can control the IHostBuilder -->
+		<DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+		<!-- We use App class to place Main method -->
+		<StartupObject>VideoApp.App</StartupObject>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<Optimize>False</Optimize>
 	</PropertyGroup>
@@ -85,6 +92,10 @@
 		<Page Update="Views\PlayerView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Properties\" />
 	</ItemGroup>
 
 	<Target Name="RemoveFoldersWithMuiFiles" Condition="'$(WindowsPackageType)' == 'None'" AfterTargets="Build">

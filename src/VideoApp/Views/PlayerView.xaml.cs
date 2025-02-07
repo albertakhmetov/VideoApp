@@ -150,7 +150,28 @@ public sealed partial class PlayerView : UserControl
 
     protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
     {
-        ViewModel.ToggleFullScreenCommand.Execute(null);
+        if (ViewModel.State == PlaybackState.Playing && e.PointerDeviceType == PointerDeviceType.Touch)
+        {
+            var position = e.GetPosition(this);
+
+            if (position.X < ActualWidth / 4)
+            {
+                SkipPosition(-1);
+            }
+            else if (position.X > ActualWidth * 3 / 4)
+            {
+                SkipPosition(+1);
+            }
+            else
+            {
+                ViewModel.ToggleFullScreenCommand.Execute(null);
+            }
+        }
+        else
+        {
+            ViewModel.ToggleFullScreenCommand.Execute(null);
+        }
+
         e.Handled = true;
     }
 
@@ -245,14 +266,13 @@ public sealed partial class PlayerView : UserControl
         if (direction < 0)
         {
             ViewModel.SkipBackCommand.Execute(null);
-            SkipOsdIcon.Glyph = "\uED3C";
+            VisualStateManager.GoToState(this, "RewindNotification", true);
         }
         else
         {
             ViewModel.SkipForwardCommand.Execute(null);
-            SkipOsdIcon.Glyph = "\uED3D";
+            VisualStateManager.GoToState(this, "ForwardNotification", true);
         }
 
-        VisualStateManager.GoToState(this, "SkipNotification", true);
     }
 }

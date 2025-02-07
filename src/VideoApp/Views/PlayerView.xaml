@@ -57,8 +57,24 @@
                                          Storyboard.TargetName="PlaybackStateOsd"/>
                     </Storyboard>
                 </VisualState>
-                <VisualState x:Name="SkipNotification">
+                <VisualState x:Name="RewindNotification">
                     <Storyboard>
+                        <DoubleAnimation Duration="0:0:0"
+                                         To="1"
+                                         Storyboard.TargetProperty="Opacity" 
+                                         Storyboard.TargetName="SkipOsdRewind"/>
+                        <DoubleAnimation Duration="0:0:0.15"
+                                         To="1"
+                                         Storyboard.TargetProperty="Opacity" 
+                                         Storyboard.TargetName="SkipOsd"/>
+                    </Storyboard>
+                </VisualState>
+                <VisualState x:Name="ForwardNotification">
+                    <Storyboard>
+                        <DoubleAnimation Duration="0:0:0"
+                                         To="1"
+                                         Storyboard.TargetProperty="Opacity" 
+                                         Storyboard.TargetName="SkipOsdForward"/>
                         <DoubleAnimation Duration="0:0:0.15"
                                          To="1"
                                          Storyboard.TargetProperty="Opacity" 
@@ -79,18 +95,22 @@
                 Opacity="0"
                 Visibility="{x:Bind converters:Helpers.VisibleIf(VolumeOsd.Opacity), Mode=OneWay}"
 >
-            <StackPanel Orientation="Horizontal">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <FontIcon Margin="0,4,0,0"  
                           VerticalAlignment="Center"
                           Glyph="{x:Bind converters:Helpers.ToVolumeIcon(ViewModel.Volume), Mode=OneWay}" />
                 <TextBlock Text="{x:Bind ViewModel.Volume, Mode=OneWay}"
                            Margin="10,0,0,0"
+                           Grid.Column="1"
                            MinWidth="45"
                            TextAlignment="Right"
                            VerticalAlignment="Center"
                            Style="{ThemeResource TitleTextBlockStyle}"/>
-
-            </StackPanel>
+            </Grid>
         </Border>
 
         <Border x:Name="PlaybackStateOsd"
@@ -98,27 +118,44 @@
                 Opacity="0"
                 Visibility="{x:Bind converters:Helpers.VisibleIf(PlaybackStateOsd.Opacity), Mode=OneWay}"
 >
-            <StackPanel Orientation="Horizontal">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <FontIcon Margin="0,4,0,0"  
                           VerticalAlignment="Center"
                           Glyph="{x:Bind converters:Helpers.ToIcon(ViewModel.State), Mode=OneWay}" />
                 <TextBlock Text="{x:Bind ViewModel.StateText, Mode=OneWay}"
+                           Grid.Column="1"
                            Margin="10,0,0,0"
                            MinWidth="45"
                            TextAlignment="Right"
                            VerticalAlignment="Center"
                            Style="{ThemeResource TitleTextBlockStyle}"/>
-            </StackPanel>
+            </Grid>
         </Border>
 
         <Border x:Name="SkipOsd"
                 Opacity="0"
                 Style="{StaticResource OsdBorder}">
-            <StackPanel Orientation="Horizontal">
-                <FontIcon Name="SkipOsdIcon"
-                          Margin="0,4,0,0"  
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <FontIcon Name="SkipOsdForward"
+                          Margin="4,4,0,0"
+                          Glyph="&#xEB9D;"
+                          Opacity="0"
+                          VerticalAlignment="Center" />
+                <FontIcon Name="SkipOsdRewind"
+                          Margin="0,4,0,0"
+                          Glyph="&#xEB9E;"
+                          Opacity="0"
                           VerticalAlignment="Center" />
                 <TextBlock Margin="10,0,0,0"
+                           Grid.Column="1"
                            MinWidth="180"
                            TextAlignment="Right"
                            VerticalAlignment="Center">
@@ -129,8 +166,7 @@
                     <Run FontSize="14"
                          Text="{x:Bind converters:Helpers.ToString(ViewModel.Duration), Mode=OneWay}"/>
                 </TextBlock>
-
-            </StackPanel>
+            </Grid>
         </Border>
         
         <controls:PlayerToolbarControl x:Name="Toolbar" 

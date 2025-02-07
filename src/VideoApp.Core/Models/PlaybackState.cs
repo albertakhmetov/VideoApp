@@ -21,6 +21,7 @@ namespace VideoApp.Core.Models;
 public enum PlaybackState
 {
     NotInitialized,
+    Initialized,
     Closed,
     Opening,
     Buffering,

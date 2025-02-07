@@ -19,12 +19,14 @@
 namespace VideoApp;
 
 using System;
+using System.Collections.Immutable;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -40,13 +42,34 @@ using WinRT.Interop;
 
 public partial class App : Application, IApp
 {
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+
+        Start(_ =>
+        {
+            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+
+            instance = new App(args);
+        });
+
+        instance?.host?.Dispose();
+    }
+
+    private static App? instance;
+
+    private readonly ImmutableArray<string> arguments;
     private IHost? host;
     private MainWindow? mainWindow;
 
     private CompositeDisposable disposable = new CompositeDisposable();
 
-    public App()
+    public App(string[] args)
     {
+        this.arguments = ImmutableArray.Create(args);
+
         InitializeComponent();
     }
 
@@ -74,7 +97,7 @@ public partial class App : Application, IApp
         }
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
 
@@ -87,16 +110,30 @@ public partial class App : Application, IApp
         var view = host.Services.GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
         mainWindow.Content = view;
 
-        host.Services.GetRequiredService<IPlaybackService>()
+        var playbackService = host.Services.GetRequiredService<IPlaybackService>();
+
+        playbackService
             .MediaFileName
             .ObserveOn(SynchronizationContext.Current!)
             .Subscribe(SetTitle)
             .DisposeWith(disposable);
+
+        await playbackService
+            .State
+            .Where(x => x == Core.Models.PlaybackState.Initialized)
+            .FirstAsync();
+
+        if (arguments.Length > 0)
+        {
+            host.Services
+                .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand))
+                .Execute(arguments[0]);
+        }
     }
 
     private void SetTitle(string? fileName)
     {
-        if(mainWindow == null)
+        if (mainWindow == null)
         {
             return;
         }
@@ -120,7 +157,6 @@ public partial class App : Application, IApp
 
     private void OnMainWindowClosed(object sender, WindowEventArgs args)
     {
-        host?.Dispose();
         Exit();
     }
 

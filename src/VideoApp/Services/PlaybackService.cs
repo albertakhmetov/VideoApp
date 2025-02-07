@@ -166,7 +166,7 @@ public sealed class PlaybackService : IPlaybackService
                 .DisposeWith(disposable);
 
             videoView.MediaPlayer = mediaPlayer;
-            stateSubject.OnNext(PlaybackState.Closed);
+            stateSubject.OnNext(PlaybackState.Initialized);
         }
     }
 
@@ -219,6 +219,8 @@ public sealed class PlaybackService : IPlaybackService
             }
 
             mediaPlayer.Time = 0;
+
+            await Task.Delay(500);
 
             return mediaPlayer.Play(media) == true;
         }

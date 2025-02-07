@@ -234,7 +234,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     private async void SkipForward()
     {
-        playbackService.SkipForward(TimeSpan.FromSeconds(30));
+        playbackService.SkipForward(TimeSpan.FromSeconds(10));
         Set(ref position, await playbackService.Position.FirstOrDefaultAsync(), nameof(Position));
     }
 }

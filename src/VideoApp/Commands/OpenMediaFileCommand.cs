@@ -39,7 +39,7 @@ public class OpenMediaFileCommand : CommandBase
     {
         if (parameter is string filePath && File.Exists(filePath))
         {
-            playbackService.Load(filePath);
+            await playbackService.Load(filePath);
         }
         else
         {

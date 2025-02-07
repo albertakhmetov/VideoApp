@@ -65,7 +65,7 @@
                             Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Playing, models:PlaybackState.Paused), Mode=OneWay}"
                             Style="{StaticResource PlaybackButton}">
                         <Button.Content>
-                            <FontIcon Margin="0,0,0,0" Glyph="&#xED3C;" />
+                            <FontIcon Margin="0,0,0,0" Glyph="&#xEB9E;" />
                         </Button.Content>
                     </Button>
 
@@ -88,7 +88,7 @@
                             Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Playing, models:PlaybackState.Paused), Mode=OneWay}"
                             Style="{StaticResource PlaybackButton}">
                         <Button.Content>
-                            <FontIcon Margin="0,0,0,0" Glyph="&#xED3D;" />
+                            <FontIcon Margin="0,0,0,0" Glyph="&#xEB9D;" />
                         </Button.Content>
                     </Button>
                 </StackPanel>
@@ -103,10 +103,6 @@
 
                         <Button.Flyout>
                             <Flyout x:Name="TracksFlyout" Placement="Bottom">
-                                <Flyout.SystemBackdrop>
-                                    <MicaBackdrop/>
-                                </Flyout.SystemBackdrop>
-
                                 <StackPanel MinWidth="200" MaxWidth="300">
                                     <TextBlock Style="{ThemeResource CaptionTextBlockStyle}"
                                                Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.AudioTracks.Length), Mode=OneWay}"
