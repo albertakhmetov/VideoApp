@@ -116,7 +116,7 @@
                           Margin="0,4,0,0"  
                           VerticalAlignment="Center" />
                 <TextBlock Margin="10,0,0,0"
-                           MinWidth="170"
+                           MinWidth="180"
                            TextAlignment="Right"
                            VerticalAlignment="Center">
                     <Run FontSize="28"

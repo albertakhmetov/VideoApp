@@ -62,8 +62,8 @@ public sealed class PlaybackService : IPlaybackService
         Duration = durationSubject.AsObservable();
         Position = positionSubject.AsObservable();
         Volume = volumeSubject.AsObservable();
-        AudioTrackInfo = audioTrackInfoSubject.AsObservable();
-        SubtitleTrackInfo = subtitleTrackInfoSubject.AsObservable();
+        AudioTracks = audioTrackInfoSubject.AsObservable();
+        SubtitleTracks = subtitleTrackInfoSubject.AsObservable();
         AudioTrack = audioTrackSubject.AsObservable();
         SubtitleTrack = subtitleTrackSubject.AsObservable();
     }
@@ -80,9 +80,9 @@ public sealed class PlaybackService : IPlaybackService
 
     public IObservable<int> Volume { get; }
 
-    public IObservable<ImmutableArray<TrackInfo>> AudioTrackInfo { get; }
+    public IObservable<ImmutableArray<TrackInfo>> AudioTracks { get; }
 
-    public IObservable<ImmutableArray<TrackInfo>> SubtitleTrackInfo { get; }
+    public IObservable<ImmutableArray<TrackInfo>> SubtitleTracks { get; }
 
     public IObservable<int> AudioTrack { get; }
 

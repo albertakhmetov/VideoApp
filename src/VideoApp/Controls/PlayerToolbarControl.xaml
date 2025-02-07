@@ -96,7 +96,7 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource PlaybackButton}"
                             Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Playing, models:PlaybackState.Paused), Mode=OneWay}"
-                            IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.AudioTrackInfo.Length, ViewModel.SubtitleTrackInfo.Length), Mode=OneWay}">
+                            IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.AudioTracks.Length, ViewModel.SubtitleTracks.Length), Mode=OneWay}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xED1E;" />
                         </Button.Content>
@@ -109,16 +109,16 @@
 
                                 <StackPanel MinWidth="200" MaxWidth="300">
                                     <TextBlock Style="{ThemeResource CaptionTextBlockStyle}"
-                                               Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.AudioTrackInfo.Length), Mode=OneWay}"
+                                               Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.AudioTracks.Length), Mode=OneWay}"
                                                Text="Audio"/>
-                                    <ListView ItemsSource="{x:Bind ViewModel.AudioTrackInfo, Mode=OneWay}"
+                                    <ListView ItemsSource="{x:Bind ViewModel.AudioTracks, Mode=OneWay}"
                                               SelectedValue="{x:Bind ViewModel.AudioTrack, Mode=TwoWay}"
                                               Margin="0,4,0,0"
                                               DisplayMemberPath="Text"/>
                                     <TextBlock Style="{ThemeResource CaptionTextBlockStyle}"
-                                               Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.SubtitleTrackInfo.Length), Mode=OneWay}"
+                                               Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.SubtitleTracks.Length), Mode=OneWay}"
                                                Text="Subtitle"/>
-                                    <ListView ItemsSource="{x:Bind ViewModel.SubtitleTrackInfo, Mode=OneWay}"
+                                    <ListView ItemsSource="{x:Bind ViewModel.SubtitleTracks, Mode=OneWay}"
                                               SelectedValue="{x:Bind ViewModel.SubtitleTrack, Mode=TwoWay}"
                                               Margin="0,4,0,0"
                                               DisplayMemberPath="Text"/>

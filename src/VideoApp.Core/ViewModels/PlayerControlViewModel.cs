@@ -38,11 +38,9 @@ public class PlayerControlViewModel : ViewModel, IDisposable
 
     private double duration, position;
     private PlaybackState state;
-    private string stateText;
-    private bool isInitialized;
     private int volume;
 
-    private ImmutableArray<TrackInfo> audioTrackInfo = [], subtitleTrackInfo = [];
+    private ImmutableArray<TrackInfo> audioTracks = [], subtitleTracks = [];
     private TrackInfo? subtitleTrack;
     private TrackInfo? audioTrack;
 
@@ -84,27 +82,27 @@ public class PlayerControlViewModel : ViewModel, IDisposable
             .DisposeWith(disposable);
 
         playbackService
-            .AudioTrackInfo
+            .AudioTracks
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => AudioTrackInfo = x)
+            .Subscribe(x => AudioTracks = x)
             .DisposeWith(disposable);
 
         playbackService
-            .SubtitleTrackInfo
+            .SubtitleTracks
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => SubtitleTrackInfo = x)
+            .Subscribe(x => SubtitleTracks = x)
             .DisposeWith(disposable);
 
         playbackService
             .AudioTrack
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => AudioTrack = AudioTrackInfo.FirstOrDefault(i => i.Id == x))
+            .Subscribe(x => AudioTrack = AudioTracks.FirstOrDefault(i => i.Id == x))
             .DisposeWith(disposable);
 
         playbackService
             .SubtitleTrack
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => SubtitleTrack = SubtitleTrackInfo.FirstOrDefault(i => i.Id == x))
+            .Subscribe(x => SubtitleTrack = SubtitleTracks.FirstOrDefault(i => i.Id == x))
             .DisposeWith(disposable);
 
         OpenMediaFileCommand = serviceProvider
@@ -137,28 +135,22 @@ public class PlayerControlViewModel : ViewModel, IDisposable
         set => playbackService.SetVolume(value);
     }
 
-    public bool IsInitialized
-    {
-        get => isInitialized;
-        private set => Set(ref isInitialized, value);
-    }
-
     public PlaybackState State
     {
         get => state;
         private set => Set(ref state, value);
     }
 
-    public ImmutableArray<TrackInfo> AudioTrackInfo
+    public ImmutableArray<TrackInfo> AudioTracks
     {
-        get => audioTrackInfo;
-        private set => Set(ref audioTrackInfo, value);
+        get => audioTracks;
+        private set => Set(ref audioTracks, value);
     }
 
-    public ImmutableArray<TrackInfo> SubtitleTrackInfo
+    public ImmutableArray<TrackInfo> SubtitleTracks
     {
-        get => subtitleTrackInfo;
-        private set => Set(ref subtitleTrackInfo, value);
+        get => subtitleTracks;
+        private set => Set(ref subtitleTracks, value);
     }
 
     public TrackInfo? AudioTrack

@@ -36,9 +36,9 @@ public interface IPlaybackService : IDisposable
 
     IObservable<PlaybackState> State { get; }
 
-    IObservable<ImmutableArray<TrackInfo>> AudioTrackInfo { get; }
+    IObservable<ImmutableArray<TrackInfo>> AudioTracks { get; }
 
-    IObservable<ImmutableArray<TrackInfo>> SubtitleTrackInfo { get; }
+    IObservable<ImmutableArray<TrackInfo>> SubtitleTracks { get; }
 
     IObservable<int> AudioTrack { get; }
 
