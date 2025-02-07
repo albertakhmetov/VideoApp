@@ -16,22 +16,46 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Views;
+namespace VideoApp.Controls;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using VideoApp.Core;
 using VideoApp.Core.ViewModels;
 
-public sealed partial class PlayerControlView : UserControl
+public sealed partial class PlayerToolbarControl : UserControl
 {
-    public PlayerControlView(PlayerControlViewModel viewModel)
-    {
-        ViewModel = viewModel.NotNull();
+    public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
+        nameof(ViewModel),
+        typeof(PlayerViewModel),
+        typeof(PlayerToolbarControl),
+        new PropertyMetadata(null, OnViewModelChanged));
 
+    private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PlayerToolbarControl control)
+        {
+            if (e.NewValue == null)
+            {
+                control.Bindings.StopTracking();
+            }
+            else
+            {
+                control.Bindings.Update();
+            }
+        }
+    }
+
+    public PlayerToolbarControl()
+    {
         this.InitializeComponent();
     }
 
-    public PlayerControlViewModel ViewModel { get; }
+    public PlayerViewModel? ViewModel
+    {
+        get => (PlayerViewModel)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
 
     public bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen;
 }

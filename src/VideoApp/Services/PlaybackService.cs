@@ -40,9 +40,6 @@ public sealed class PlaybackService : IPlaybackService
     private readonly BehaviorSubject<long> durationSubject, positionSubject;
     private readonly BehaviorSubject<int> volumeSubject;
 
-    private readonly Subject<int> volumeSetSubject;
-    private readonly Subject<long> positionSetSubject;
-
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
 
@@ -61,9 +58,6 @@ public sealed class PlaybackService : IPlaybackService
 
         audioTrackSubject = new BehaviorSubject<int>(-1);
         subtitleTrackSubject = new BehaviorSubject<int>(-1);
-
-        volumeSetSubject = new Subject<int>();
-        positionSetSubject = new Subject<long>();
 
         MediaFileName = mediaFileNameSubject.AsObservable();
         State = stateSubject.AsObservable();
@@ -102,6 +96,9 @@ public sealed class PlaybackService : IPlaybackService
         disposable = null;
 
         trackLoadingStatus?.Dispose();
+
+        mediaPlayer?.Dispose();
+        libVCL?.Dispose();
     }
 
     public void Initialize(object sender, string[] options)
@@ -110,18 +107,8 @@ public sealed class PlaybackService : IPlaybackService
         {
             disposable = new CompositeDisposable();
 
-            libVCL = new LibVLC(options).DisposeWith(disposable);
-            mediaPlayer = new MediaPlayer(libVCL).DisposeWith(disposable);
-
-            volumeSetSubject
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(volume => mediaPlayer.Volume = volume)
-                .DisposeWith(disposable);
-
-            positionSetSubject
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(position => mediaPlayer.Time = position)
-                .DisposeWith(disposable);
+            libVCL = new LibVLC(options);
+            mediaPlayer = new MediaPlayer(libVCL);
 
             Observable
                 .FromEventPattern<MediaPlayerMediaChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.MediaChanged))
@@ -290,12 +277,14 @@ public sealed class PlaybackService : IPlaybackService
             return false;
         }
 
-        if (Math.Abs(position - positionSubject.Value) < 1000)
+        var newPosition = Math.Max(0, Math.Min(mediaPlayer.Length - 1, position));
+
+        if (Math.Abs(newPosition - positionSubject.Value) < 1000)
         {
             return false;
         }
 
-        positionSetSubject.OnNext(position);
+        mediaPlayer.Time = newPosition;
         return true;
     }
 
@@ -313,7 +302,7 @@ public sealed class PlaybackService : IPlaybackService
             return false;
         }
 
-        volumeSetSubject.OnNext(newVolume);
+        mediaPlayer.Volume = newVolume;
         return true;
     }
 

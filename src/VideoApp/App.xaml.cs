@@ -120,6 +120,7 @@ public partial class App : Application, IApp
 
     private void OnMainWindowClosed(object sender, WindowEventArgs args)
     {
+        host?.Dispose();
         Exit();
     }
 
@@ -133,9 +134,7 @@ public partial class App : Application, IApp
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
-        builder.Services.AddTransient<PlayerControlViewModel>();
 
-        builder.Services.AddSingleton<PlayerControlView>();
         builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));
 
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));

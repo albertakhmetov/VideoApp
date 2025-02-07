@@ -40,6 +40,10 @@ public class PlayerViewModel : ViewModel
     private bool isInitialized, isStopped, isPlaying;
     private int volume;
 
+    private ImmutableArray<TrackInfo> audioTrackInfo = [], subtitleTrackInfo = [];
+    private TrackInfo? subtitleTrack;
+    private TrackInfo? audioTrack;
+
     public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
     {
         if (SynchronizationContext.Current == null)
@@ -59,6 +63,7 @@ public class PlayerViewModel : ViewModel
 
         playbackService
             .Position
+            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref position, x, nameof(Position)))
             .DisposeWith(disposable);
@@ -71,6 +76,7 @@ public class PlayerViewModel : ViewModel
 
         playbackService
             .State
+            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => IsPlaying = x == Models.PlaybackState.Playing)
             .DisposeWith(disposable);
@@ -81,23 +87,47 @@ public class PlayerViewModel : ViewModel
             .Subscribe(x => IsStopped = x == Models.PlaybackState.Stopped)
             .DisposeWith(disposable);
 
+        playbackService
+            .AudioTrackInfo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTrackInfo = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTrackInfo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTrackInfo = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .AudioTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTrack = AudioTrackInfo.FirstOrDefault(i => i.Id == x))
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTrack = SubtitleTrackInfo.FirstOrDefault(i => i.Id == x))
+            .DisposeWith(disposable);
+
         OpenMediaFileCommand = serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
+        TogglePlaybackCommand = new RelayCommand(_ => TooglePlayback());
         ToggleFullScreenCommand = new RelayCommand(x => app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
         SkipBackCommand = new RelayCommand(_ => AdjustPosition(-10));
         SkipForwardCommand = new RelayCommand(_ => AdjustPosition(+30));
-
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
+
     }
 
     private void AdjustPosition(int delta)
     {
-        var newPosition = Math.Min(Duration - 1, Math.Max(0, Position + delta * 1000));
+        var newPosition = Position + delta * 1000;
 
         playbackService.SetPosition(newPosition);
-        Position = newPosition;
     }
 
     private void AdjustVolume(int direction)
@@ -107,10 +137,33 @@ public class PlayerViewModel : ViewModel
             return;
         }
 
-        var newVolume = Math.Max(0, Math.Min(100, (Volume / 5) * 5 + Math.Sign(direction) * 5));
+        var newVolume = (Volume / 5) * 5 + Math.Sign(direction) * 5;
 
         playbackService.SetVolume(newVolume);
         Volume = newVolume;
+    }
+
+    private async void TooglePlayback()
+    {
+        if (!playbackService.IsInitialized)
+        {
+            return;
+        }
+
+        var state = await playbackService.State.FirstOrDefaultAsync();
+
+        if (state == Models.PlaybackState.Closed)
+        {
+            OpenMediaFileCommand.Execute(null);
+        }
+        else if (state == Models.PlaybackState.Stopped)
+        {
+            playbackService.Play();
+        }
+        else
+        {
+            playbackService.TooglePlaying();
+        }
     }
 
     public double Duration
@@ -122,13 +175,13 @@ public class PlayerViewModel : ViewModel
     public double Position
     {
         get => position;
-        private set => Set(ref position, value);
+        set => playbackService.SetPosition(value);
     }
 
     public int Volume
     {
         get => volume;
-        private set => Set(ref volume, value);
+        set => playbackService.SetVolume(value);
     }
 
     public bool IsInitialized
@@ -148,6 +201,44 @@ public class PlayerViewModel : ViewModel
         get => isPlaying;
         private set => Set(ref isPlaying, value);
     }
+
+    public ImmutableArray<TrackInfo> AudioTrackInfo
+    {
+        get => audioTrackInfo;
+        private set => Set(ref audioTrackInfo, value);
+    }
+
+    public ImmutableArray<TrackInfo> SubtitleTrackInfo
+    {
+        get => subtitleTrackInfo;
+        private set => Set(ref subtitleTrackInfo, value);
+    }
+
+    public TrackInfo? AudioTrack
+    {
+        get => audioTrack;
+        set
+        {
+            if (value != null && Set(ref audioTrack, value))
+            {
+                playbackService.SetAudioTrack(value.Id);
+            }
+        }
+    }
+
+    public TrackInfo? SubtitleTrack
+    {
+        get => subtitleTrack;
+        set
+        {
+            if (value != null && Set(ref subtitleTrack, value))
+            {
+                playbackService.SetSubtitleTrack(value.Id);
+            }
+        }
+    }
+
+    public ICommand TogglePlaybackCommand { get; }
 
     public ICommand ToggleFullScreenCommand { get; }
 
