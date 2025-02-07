@@ -43,8 +43,6 @@ public sealed class PlaybackService : IPlaybackService
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
 
-    private IDisposable? trackLoadingStatus;
-
     public PlaybackService()
     {
         mediaFileNameSubject = new BehaviorSubject<string?>(null);
@@ -95,8 +93,6 @@ public sealed class PlaybackService : IPlaybackService
         disposable?.Dispose();
         disposable = null;
 
-        trackLoadingStatus?.Dispose();
-
         mediaPlayer?.Dispose();
         libVCL?.Dispose();
 
@@ -112,12 +108,7 @@ public sealed class PlaybackService : IPlaybackService
 
             libVCL = new LibVLC(options);
             mediaPlayer = new MediaPlayer(libVCL);
-
-            Observable
-                .FromEventPattern<MediaPlayerMediaChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.MediaChanged))
-                .Select(x => x.EventArgs.Media)
-                .Subscribe(x => Load(x))
-                .DisposeWith(disposable);
+            mediaPlayer.Volume = 100;
 
             Observable
                 .FromEventPattern<MediaPlayerLengthChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.LengthChanged))
@@ -133,8 +124,14 @@ public sealed class PlaybackService : IPlaybackService
 
             Observable
                 .FromEventPattern<MediaPlayerVolumeChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.VolumeChanged))
-                .Select(x => Convert.ToInt32(x.EventArgs.Volume))
-                .Subscribe(x => volumeSubject.OnNext(mediaPlayer.Volume))
+                .Select(x => Convert.ToInt32(x.EventArgs.Volume * 100))
+                .Where(x => x >= 0)
+                .Subscribe(x => volumeSubject.OnNext(x))
+                .DisposeWith(disposable);
+
+            Observable
+                .FromEventPattern<EventArgs>(mediaPlayer, nameof(MediaPlayer.Opening))
+                .Subscribe(x => stateSubject.OnNext(PlaybackState.Opening))
                 .DisposeWith(disposable);
 
             Observable
@@ -163,59 +160,17 @@ public sealed class PlaybackService : IPlaybackService
                 .Subscribe(_ => positionSubject.OnNext(0))
                 .DisposeWith(disposable);
 
+            stateSubject
+                .Where(x => x == PlaybackState.Playing)
+                .Subscribe(_ => NotifyCurrentState())
+                .DisposeWith(disposable);
+
             videoView.MediaPlayer = mediaPlayer;
             stateSubject.OnNext(PlaybackState.Closed);
         }
     }
 
-    private void Load(Media m)
-    {
-        if (disposable == null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (libVCL == null || mediaPlayer == null)
-        {
-            return;
-        }
-
-        trackLoadingStatus?.Dispose();
-
-        trackLoadingStatus = Observable
-           .FromEventPattern<MediaParsedChangedEventArgs>(m, nameof(Media.ParsedChanged))
-           .Select(x => x.EventArgs.ParsedStatus == MediaParsedStatus.Done)
-           .Subscribe(x => UpdateTracks())
-           .DisposeWith(disposable);
-    }
-
-    private void UpdateTracks()
-    {
-        if (libVCL == null || mediaPlayer == null)
-        {
-            return;
-        }
-
-        var audios = mediaPlayer.AudioTrackDescription
-            .Select(x => new TrackInfo(x.Id, x.Name))
-            .ToArray();
-
-        var subtitles = mediaPlayer.SpuDescription
-            .Select(x => new TrackInfo(x.Id, x.Name))
-            .ToArray();
-
-        audioTrackInfoSubject.OnNext(ImmutableArray.Create(audios));
-        subtitleTrackInfoSubject.OnNext(ImmutableArray.Create(subtitles));
-
-        audioTrackSubject.OnNext(mediaPlayer.AudioTrack);
-        subtitleTrackSubject.OnNext(mediaPlayer.Spu);
-
-        mediaFileNameSubject.OnNext(mediaPlayer.Media.Meta(MetadataType.Title));
-
-        trackLoadingStatus = null;
-    }
-
-    public bool Load(string fileName)
+    public async Task<bool> Load(string fileName)
     {
         if (libVCL == null || mediaPlayer == null)
         {
@@ -226,12 +181,49 @@ public sealed class PlaybackService : IPlaybackService
         {
             using var media = new Media(libVCL, new Uri(fileName));
 
+            var parseStatus = await media.Parse();
+
+            if (parseStatus == MediaParsedStatus.Done)
+            {
+                var disabledTrack = new TrackInfo(-1, "Disabled", null);
+
+                var audios = media.Tracks
+                    .Where(x => x.TrackType == TrackType.Audio)
+                    .Select((x, i) => new TrackInfo(x.Id, x.Description ?? $"Track {i + 1}", x.Language));
+
+                var subtitles = media.Tracks
+                    .Where(x => x.TrackType == TrackType.Text)
+                    .Select((x, i) => new TrackInfo(x.Id, x.Description ?? $"Track {i + 1}", x.Language));
+
+                if (audios.Any())
+                {
+                    audios = new TrackInfo[] { disabledTrack }.Union(audios);
+                }
+
+                if (subtitles.Any())
+                {
+                    subtitles = new TrackInfo[] { disabledTrack }.Union(subtitles);
+                }
+
+                mediaFileNameSubject.OnNext(media.Meta(MetadataType.Title));
+
+                audioTrackInfoSubject.OnNext(ImmutableArray.Create(audios.ToArray()));
+                subtitleTrackInfoSubject.OnNext(ImmutableArray.Create(subtitles.ToArray()));
+            }
+            else
+            {
+                mediaFileNameSubject.OnNext(Path.GetFileName(fileName));
+
+                audioTrackInfoSubject.OnNext([]);
+                subtitleTrackInfoSubject.OnNext([]);
+            }
+
+            mediaPlayer.Time = 0;
+
             return mediaPlayer.Play(media) == true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public void Play()
@@ -241,20 +233,7 @@ public sealed class PlaybackService : IPlaybackService
             return;
         }
 
-        if (mediaPlayer.State == VLCState.Paused)
-        {
-            mediaPlayer.Play();
-        }
-        else
-        {
-            mediaPlayer.Play();
-
-            //volumeSubject.OnNext(mediaPlayer.Volume);
-            //positionSubject.OnNext(mediaPlayer.Time);
-
-            //audioTrackSubject.OnNext(mediaPlayer.AudioTrack);
-            //subtitleTrackSubject.OnNext(mediaPlayer.Spu);
-        }
+        mediaPlayer.Play();
     }
 
     public void Pause()
@@ -307,6 +286,16 @@ public sealed class PlaybackService : IPlaybackService
 
         mediaPlayer.Time = newPosition;
         return true;
+    }
+
+    public bool SkipBack(TimeSpan timeSpan)
+    {
+        return SetPosition(positionSubject.Value - timeSpan.TotalMilliseconds);
+    }
+
+    public bool SkipForward(TimeSpan timeSpan)
+    {
+        return SetPosition(positionSubject.Value + timeSpan.TotalMilliseconds);
     }
 
     public bool SetVolume(int volume)
@@ -363,5 +352,16 @@ public sealed class PlaybackService : IPlaybackService
         {
             return false;
         }
+    }
+
+    private void NotifyCurrentState()
+    {
+        if (!IsInitialized || mediaPlayer == null)
+        {
+            return;
+        }
+
+        audioTrackSubject.OnNext(mediaPlayer.AudioTrack);
+        subtitleTrackSubject.OnNext(mediaPlayer.Spu);
     }
 }

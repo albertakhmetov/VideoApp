@@ -46,7 +46,7 @@ public interface IPlaybackService : IDisposable
 
     void Initialize(object sender, string[] options);
 
-    bool Load(string fileName);
+    Task<bool> Load(string fileName);
 
     void Play();
 
@@ -59,6 +59,10 @@ public interface IPlaybackService : IDisposable
     bool SetPosition(double position);
 
     bool SetPosition(long position);
+
+    bool SkipBack(TimeSpan timeSpan);
+
+    bool SkipForward(TimeSpan timeSpan);
 
     bool SetVolume(int volume);
 

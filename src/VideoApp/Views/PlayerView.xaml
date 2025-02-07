@@ -120,7 +120,7 @@
                            TextAlignment="Right"
                            VerticalAlignment="Center">
                     <Run FontSize="28"
-                         Text="{x:Bind converters:Helpers.ToString(ViewModel.Position), Mode=OneWay}"/>
+                         Text="{x:Bind ViewModel.PositionText, Mode=OneWay}"/>
                     <Run FontSize="28"
                          Text="/"/>
                     <Run FontSize="14"

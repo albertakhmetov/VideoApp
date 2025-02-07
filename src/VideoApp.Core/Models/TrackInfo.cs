@@ -18,14 +18,20 @@
  */
 namespace VideoApp.Core.Models;
 
-public class TrackInfo(int id, string name) : IEquatable<TrackInfo>
+public class TrackInfo : IEquatable<TrackInfo>
 {
-    public int Id { get; } = id;
+    public TrackInfo(int id, string description, string? languange)
+    {
+        Id = id;
+        Text = languange == null ? description : $"{description} [{languange}]";
+    }
 
-    public string Name { get; } = name.NotNull();
+    public int Id { get; }
+
+    public string Text { get; }
 
     public bool Equals(TrackInfo? other)
     {
-        return other != null && Id == other.Id;
+        return other != null && (Id == other.Id && Text == other.Text);
     }
 }

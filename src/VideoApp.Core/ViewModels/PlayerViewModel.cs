@@ -38,7 +38,7 @@ public class PlayerViewModel : ViewModel
 
     private double duration, position;
     private PlaybackState state;
-    private string stateText;
+    private string stateText, positionText;
     private bool isInitialized;
     private int volume;
 
@@ -65,13 +65,20 @@ public class PlayerViewModel : ViewModel
 
         playbackService
             .Position
-            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref position, x, nameof(Position)))
             .DisposeWith(disposable);
 
         playbackService
+            .Position
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => PositionText = TimeSpan.FromSeconds(Convert.ToInt64(x / 1000)).ToString())
+            .DisposeWith(disposable);
+
+        playbackService
             .Volume
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref volume, x, nameof(Volume)))
             .DisposeWith(disposable);
@@ -119,10 +126,9 @@ public class PlayerViewModel : ViewModel
         TogglePlaybackCommand = new RelayCommand(_ => TooglePlayback());
         ToggleFullScreenCommand = new RelayCommand(x => app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
-        SkipBackCommand = new RelayCommand(_ => AdjustPosition(-10));
-        SkipForwardCommand = new RelayCommand(_ => AdjustPosition(+30));
+        SkipBackCommand = new RelayCommand(_ => playbackService.SkipBack(TimeSpan.FromSeconds(10)));
+        SkipForwardCommand = new RelayCommand(_ => playbackService.SkipForward(TimeSpan.FromSeconds(30)));
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
-
     }
 
     private string GetStateText(PlaybackState x) => x switch
@@ -132,13 +138,6 @@ public class PlayerViewModel : ViewModel
         PlaybackState.Stopped => "Stopped",
         _ => ""
     };
-
-    private void AdjustPosition(int delta)
-    {
-        var newPosition = Position + delta * 1000;
-
-        playbackService.SetPosition(newPosition);
-    }
 
     private void AdjustVolume(int direction)
     {
@@ -186,6 +185,12 @@ public class PlayerViewModel : ViewModel
     {
         get => position;
         set => playbackService.SetPosition(value);
+    }
+
+    public string PositionText
+    {
+        get => positionText;
+        private set => Set(ref positionText, value);
     }
 
     public int Volume

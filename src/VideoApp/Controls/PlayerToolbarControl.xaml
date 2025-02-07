@@ -40,7 +40,7 @@
                            VerticalAlignment="Center"
                            Text="{x:Bind converters:Helpers.ToString(ViewModel.Position), Mode=OneWay}"/>
 
-                <Slider Grid.Column="1"
+                <Slider Grid.Column="1" 
                         Maximum="{x:Bind ViewModel.Duration, Mode=OneWay}"
                         StepFrequency="1"
                         Value="{x:Bind ViewModel.Position, Mode=TwoWay}"
@@ -114,14 +114,14 @@
                                     <ListView ItemsSource="{x:Bind ViewModel.AudioTrackInfo, Mode=OneWay}"
                                               SelectedValue="{x:Bind ViewModel.AudioTrack, Mode=TwoWay}"
                                               Margin="0,4,0,0"
-                                              DisplayMemberPath="Name"/>
+                                              DisplayMemberPath="Text"/>
                                     <TextBlock Style="{ThemeResource CaptionTextBlockStyle}"
                                                Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.SubtitleTrackInfo.Length), Mode=OneWay}"
                                                Text="Subtitle"/>
                                     <ListView ItemsSource="{x:Bind ViewModel.SubtitleTrackInfo, Mode=OneWay}"
                                               SelectedValue="{x:Bind ViewModel.SubtitleTrack, Mode=TwoWay}"
                                               Margin="0,4,0,0"
-                                              DisplayMemberPath="Name"/>
+                                              DisplayMemberPath="Text"/>
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
