@@ -125,7 +125,7 @@ public sealed partial class PlayerView : UserControl
             }
 
             ProtectedCursor.Dispose();
-        } 
+        }
     }
 
     private void PlayerView_Unloaded(object sender, RoutedEventArgs e)
@@ -217,7 +217,7 @@ public sealed partial class PlayerView : UserControl
 
     private void TogglePlaybackState()
     {
-        if(ViewModel.State != PlaybackState.Paused && ViewModel.State != PlaybackState.Playing)
+        if (ViewModel.State != PlaybackState.Paused && ViewModel.State != PlaybackState.Playing)
         {
             return;
         }

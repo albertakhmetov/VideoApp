@@ -19,6 +19,7 @@
 namespace VideoApp.Core.ViewModels;
 
 using System;
+using System.Collections.Immutable;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -27,32 +28,34 @@ using VideoApp.Core.Commands;
 using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 
-public class PlayerViewModel : ViewModel, IDisposable
+public class PlayerControlViewModel : ViewModel, IDisposable
 {
     private CompositeDisposable disposable = new CompositeDisposable();
 
+    private readonly IServiceProvider serviceProvider;
     private readonly IApp app;
     private readonly IPlaybackService playbackService;
 
     private double duration, position;
     private PlaybackState state;
+    private string stateText;
+    private bool isInitialized;
     private int volume;
 
-    public PlayerViewModel(
-        IServiceProvider serviceProvider,
-        IApp app,
-        IPlaybackService playbackService,
-        PlayerControlViewModel playerControlViewModel)
+    private ImmutableArray<TrackInfo> audioTrackInfo = [], subtitleTrackInfo = [];
+    private TrackInfo? subtitleTrack;
+    private TrackInfo? audioTrack;
+
+    public PlayerControlViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
     {
         if (SynchronizationContext.Current == null)
         {
             throw new InvalidOperationException();
         }
 
+        this.serviceProvider = serviceProvider.NotNull();
         this.app = app.NotNull();
         this.playbackService = playbackService.NotNull();
-
-        PlayerControlViewModel = playerControlViewModel.NotNull();
 
         playbackService
             .Duration
@@ -62,21 +65,46 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         playbackService
             .Position
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref position, x, nameof(Position)))
             .DisposeWith(disposable);
 
         playbackService
             .Volume
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref volume, x, nameof(Volume)))
             .DisposeWith(disposable);
 
         playbackService
             .State
-            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => State = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .AudioTrackInfo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTrackInfo = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTrackInfo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTrackInfo = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .AudioTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTrack = AudioTrackInfo.FirstOrDefault(i => i.Id == x))
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTrack = SubtitleTrackInfo.FirstOrDefault(i => i.Id == x))
             .DisposeWith(disposable);
 
         OpenMediaFileCommand = serviceProvider
@@ -89,10 +117,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         SkipBackCommand = new RelayCommand(_ => playbackService.SkipBack(TimeSpan.FromSeconds(10)));
         SkipForwardCommand = new RelayCommand(_ => playbackService.SkipForward(TimeSpan.FromSeconds(30)));
-        AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
     }
-
-    public PlayerControlViewModel PlayerControlViewModel { get; }
 
     public double Duration
     {
@@ -112,25 +137,53 @@ public class PlayerViewModel : ViewModel, IDisposable
         set => playbackService.SetVolume(value);
     }
 
+    public bool IsInitialized
+    {
+        get => isInitialized;
+        private set => Set(ref isInitialized, value);
+    }
+
     public PlaybackState State
     {
         get => state;
-        private set
+        private set => Set(ref state, value);
+    }
+
+    public ImmutableArray<TrackInfo> AudioTrackInfo
+    {
+        get => audioTrackInfo;
+        private set => Set(ref audioTrackInfo, value);
+    }
+
+    public ImmutableArray<TrackInfo> SubtitleTrackInfo
+    {
+        get => subtitleTrackInfo;
+        private set => Set(ref subtitleTrackInfo, value);
+    }
+
+    public TrackInfo? AudioTrack
+    {
+        get => audioTrack;
+        set
         {
-            if (Set(ref state, value))
+            if (value != null && Set(ref audioTrack, value))
             {
-                OnPropertyChanged(nameof(StateText));
+                playbackService.SetAudioTrack(value.Id);
             }
         }
     }
 
-    public string StateText => State switch
+    public TrackInfo? SubtitleTrack
     {
-        PlaybackState.Playing => "Playing",
-        PlaybackState.Paused => "Paused",
-        PlaybackState.Stopped => "Stopped",
-        _ => ""
-    };
+        get => subtitleTrack;
+        set
+        {
+            if (value != null && Set(ref subtitleTrack, value))
+            {
+                playbackService.SetSubtitleTrack(value.Id);
+            }
+        }
+    }
 
     public CommandBase OpenMediaFileCommand { get; }
 
@@ -142,26 +195,11 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public ICommand SkipForwardCommand { get; }
 
-    public ICommand AdjustVolumeCommand { get; }
-
     public void Dispose()
     {
         if (!disposable.IsDisposed)
         {
             disposable.Dispose();
         }
-    }
-
-    private void AdjustVolume(int direction)
-    {
-        if (direction == 0)
-        {
-            return;
-        }
-
-        var newVolume = (Volume / 5) * 5 + Math.Sign(direction) * 5;
-
-        playbackService.SetVolume(newVolume);
-        Volume = newVolume;
     }
 }

@@ -120,7 +120,7 @@
                            TextAlignment="Right"
                            VerticalAlignment="Center">
                     <Run FontSize="28"
-                         Text="{x:Bind ViewModel.PositionText, Mode=OneWay}"/>
+                         Text="{x:Bind converters:Helpers.ToString(ViewModel.Position), Mode=OneWay}"/>
                     <Run FontSize="28"
                          Text="/"/>
                     <Run FontSize="14"
@@ -129,10 +129,9 @@
 
             </StackPanel>
         </Border>
-
-
+        
         <controls:PlayerToolbarControl x:Name="Toolbar" 
                                        Visibility="{x:Bind converters:Helpers.VisibleIf(Toolbar.Opacity), Mode=OneWay}"
-                                       ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
+                                       ViewModel="{x:Bind ViewModel.PlayerControlViewModel, Mode=OneTime}"/>
     </Grid>
 </UserControl>
