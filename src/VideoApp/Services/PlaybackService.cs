@@ -166,7 +166,7 @@ public sealed class PlaybackService : IPlaybackService
                 .DisposeWith(disposable);
 
             videoView.MediaPlayer = mediaPlayer;
-            stateSubject.OnNext(PlaybackState.Initialized);
+            stateSubject.OnNext(PlaybackState.Closed);
         }
     }
 

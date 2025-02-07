@@ -16,15 +16,16 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Core.ViewModels;
 
-public enum PlaybackState
+using System;
+using System.Windows.Input;
+using VideoApp.Core.Commands;
+using VideoApp.Core.Services;
+
+public class SettingsViewModel : ViewModel
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    public SettingsViewModel(IApp app)
+    {
+    }
 }

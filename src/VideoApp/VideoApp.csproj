@@ -53,6 +53,7 @@
 		<None Remove="CustomStyle.xaml" />
 		<None Remove="Views\PlayerControlView.xaml" />
 		<None Remove="Views\PlayerView.xaml" />
+		<None Remove="Views\SettingsView.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -80,6 +81,9 @@
 		<None Update="App.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
+		<Page Update="Views\SettingsView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\PlayerControlView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

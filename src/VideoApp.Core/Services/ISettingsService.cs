@@ -16,15 +16,14 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Core.Services;
 
-public enum PlaybackState
+using System;
+using VideoApp.Core.Models;
+
+public interface ISettingsService
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    IObservable<AppTheme> Theme { get; }
+
+    void SetTheme(AppTheme appTheme);
 }

@@ -15,7 +15,7 @@
             BorderBrush="{ThemeResource ControlElevationBorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="4,4">
+            Padding="4,8,4,8">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -59,6 +59,14 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Style="{StaticResource PlaybackButton}" Command="{x:Bind ViewModel.OpenMediaFileCommand}">
+                        <Button.Content>
+                            <FontIcon Margin="0,0,0,0" Glyph="&#xF847;" />
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Command="{x:Bind ViewModel.SkipBackCommand}"
@@ -165,7 +173,8 @@
 
                         <Button.Flyout>
                             <MenuFlyout x:Name="MenuFlyout">
-                                <MenuFlyoutItem Text="Load" Command="{x:Bind ViewModel.OpenMediaFileCommand}"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Settings" Command="{x:Bind ViewModel.SettingsCommand}"/>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>

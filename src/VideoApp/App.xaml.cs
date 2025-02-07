@@ -107,9 +107,6 @@ public partial class App : Application, IApp
         mainWindow.Closed += OnMainWindowClosed;
         mainWindow.AppWindow.Show(true);
 
-        var view = host.Services.GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
-        mainWindow.Content = view;
-
         var playbackService = host.Services.GetRequiredService<IPlaybackService>();
 
         playbackService
@@ -120,7 +117,7 @@ public partial class App : Application, IApp
 
         await playbackService
             .State
-            .Where(x => x == Core.Models.PlaybackState.Initialized)
+            .Where(x => x == Core.Models.PlaybackState.Closed)
             .FirstAsync();
 
         if (arguments.Length > 0)
@@ -168,14 +165,17 @@ public partial class App : Application, IApp
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
+        builder.Services.AddSingleton<ISettingsService, SettingsService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
-        builder.Services.AddTransient<PlayerViewModel>();
+        builder.Services.AddTransient<SettingsViewModel>();
 
         builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));
+        builder.Services.AddKeyedSingleton<UserControl, SettingsView>(nameof(SettingsViewModel));
 
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));
         builder.Services.AddKeyedSingleton<CommandBase, TogglePlaybackCommand>(nameof(TogglePlaybackCommand));
+        builder.Services.AddKeyedSingleton<CommandBase, SettingsCommand>(nameof(SettingsCommand));
 
         return builder.Build();
     }

@@ -1,4 +1,4 @@
-﻿/*  Copyright © 2025, Albert Akhmetov <akhmetov@live.com>   
+/*  Copyright � 2025, Albert Akhmetov <akhmetov@live.com>   
  *
  *  This file is part of VideoApp.
  *
@@ -16,15 +16,20 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Views;
 
-public enum PlaybackState
+using Microsoft.UI.Xaml.Controls;
+using VideoApp.Core;
+using VideoApp.Core.ViewModels;
+
+public sealed partial class SettingsView : UserControl
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    public SettingsView(SettingsViewModel viewModel)
+    {
+        ViewModel = viewModel.NotNull();
+
+        this.InitializeComponent();
+    }
+
+    public SettingsViewModel ViewModel { get; }
 }

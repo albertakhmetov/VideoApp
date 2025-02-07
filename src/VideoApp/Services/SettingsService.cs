@@ -16,15 +16,29 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Services;
 
-public enum PlaybackState
+using System;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using VideoApp.Core.Models;
+using VideoApp.Core.Services;
+
+internal class SettingsService : ISettingsService
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    private readonly BehaviorSubject<AppTheme> themeSubject;
+
+    public SettingsService()
+    {
+        themeSubject = new BehaviorSubject<AppTheme>(AppTheme.Dark);
+
+        Theme = themeSubject.AsObservable();
+    }
+
+    public IObservable<AppTheme> Theme { get; }
+
+    public void SetTheme(AppTheme appTheme)
+    {
+        throw new NotImplementedException();
+    }
 }

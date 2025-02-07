@@ -111,6 +111,9 @@ public class PlayerViewModel : ViewModel, IDisposable
         TogglePlaybackCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(TogglePlaybackCommand));
 
+        SettingsCommand = this.serviceProvider
+            .GetRequiredKeyedService<CommandBase>(nameof(SettingsCommand));
+
         ToggleFullScreenCommand = new RelayCommand(x => this.app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
         SkipBackCommand = new RelayCommand(_ => SkipBack());
@@ -193,6 +196,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     }
 
     public CommandBase OpenMediaFileCommand { get; }
+
+    public ICommand SettingsCommand { get; }
 
     public ICommand TogglePlaybackCommand { get; }
 

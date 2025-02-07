@@ -84,7 +84,7 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <vlc:VideoView x:Name="VideoControl"
+        <vlc:VideoView x:Name="VideoControl"                      
                        Initialized="VideoView_Initialized"/>
 
         <Grid Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed), Mode=OneWay}"
@@ -129,7 +129,7 @@
                 <TextBlock Text="{x:Bind ViewModel.StateText, Mode=OneWay}"
                            Grid.Column="1"
                            Margin="10,0,0,0"
-                           MinWidth="45"
+                           MinWidth="100"
                            TextAlignment="Right"
                            VerticalAlignment="Center"
                            Style="{ThemeResource TitleTextBlockStyle}"/>
@@ -143,15 +143,18 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon Name="SkipOsdForward"
+                <FontIcon Name="SkipOsdRewind"
+                          Grid.Column="0"
                           Margin="4,4,0,0"
-                          Glyph="&#xEB9D;"
+                          Glyph="&#xEB9E;"
                           Opacity="0"
                           VerticalAlignment="Center" />
-                <FontIcon Name="SkipOsdRewind"
-                          Margin="0,4,0,0"
-                          Glyph="&#xEB9E;"
+                <FontIcon Name="SkipOsdForward"
+                          Grid.Column="2"
+                          Margin="16,4,4,0"
+                          Glyph="&#xEB9D;"
                           Opacity="0"
                           VerticalAlignment="Center" />
                 <TextBlock Margin="10,0,0,0"

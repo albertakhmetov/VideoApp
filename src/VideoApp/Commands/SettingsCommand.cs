@@ -16,15 +16,26 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Commands;
 
-public enum PlaybackState
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using VideoApp.Core;
+using VideoApp.Core.Commands;
+using VideoApp.Core.ViewModels;
+
+internal class SettingsCommand : CommandBase
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    private readonly IServiceProvider serviceProvider;
+
+    public SettingsCommand(IServiceProvider serviceProvider)
+    {
+        this.serviceProvider = serviceProvider.NotNull();
+    }
+
+    public override void Execute(object? parameter)
+    {
+
+    }
 }

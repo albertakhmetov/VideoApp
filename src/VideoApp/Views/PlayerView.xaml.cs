@@ -132,6 +132,8 @@ public sealed partial class PlayerView : UserControl
     {
         this.Bindings.StopTracking();
 
+        playbackService.Pause();
+
         ProtectedCursor?.Dispose();
 
         disposable?.Dispose();

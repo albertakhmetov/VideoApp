@@ -18,13 +18,9 @@
  */
 namespace VideoApp.Core.Models;
 
-public enum PlaybackState
+public enum AppTheme
 {
-    NotInitialized,
-    Closed,
-    Opening,
-    Buffering,
-    Playing,
-    Paused,
-    Stopped
+    System,
+    Dark,
+    Light
 }
