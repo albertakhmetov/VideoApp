@@ -37,7 +37,9 @@ public class PlayerViewModel : ViewModel
     private readonly IPlaybackService playbackService;
 
     private double duration, position;
-    private bool isInitialized, isStopped, isPlaying;
+    private PlaybackState state;
+    private string stateText;
+    private bool isInitialized;
     private int volume;
 
     private ImmutableArray<TrackInfo> audioTrackInfo = [], subtitleTrackInfo = [];
@@ -76,15 +78,15 @@ public class PlayerViewModel : ViewModel
 
         playbackService
             .State
-            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => IsPlaying = x == Models.PlaybackState.Playing)
+            .Subscribe(x => State = x)
             .DisposeWith(disposable);
 
         playbackService
             .State
+            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => IsStopped = x == Models.PlaybackState.Stopped)
+            .Subscribe(x => StateText = GetStateText(x))
             .DisposeWith(disposable);
 
         playbackService
@@ -122,6 +124,14 @@ public class PlayerViewModel : ViewModel
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
 
     }
+
+    private string GetStateText(PlaybackState x) => x switch
+    {
+        PlaybackState.Playing => "Playing",
+        PlaybackState.Paused => "Paused",
+        PlaybackState.Stopped => "Stopped",
+        _ => ""
+    };
 
     private void AdjustPosition(int delta)
     {
@@ -190,16 +200,16 @@ public class PlayerViewModel : ViewModel
         private set => Set(ref isInitialized, value);
     }
 
-    public bool IsStopped
+    public PlaybackState State
     {
-        get => isStopped;
-        private set => Set(ref isStopped, value);
+        get => state;
+        private set => Set(ref state, value);
     }
 
-    public bool IsPlaying
+    public string StateText
     {
-        get => isPlaying;
-        private set => Set(ref isPlaying, value);
+        get => stateText;
+        private set => Set(ref stateText, value);
     }
 
     public ImmutableArray<TrackInfo> AudioTrackInfo

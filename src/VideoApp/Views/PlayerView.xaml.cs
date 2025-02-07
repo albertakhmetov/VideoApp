@@ -22,11 +22,14 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using LibVLCSharp.Platforms.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using SharpDX.Mathematics.Interop;
 using VideoApp.Core;
+using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 using VideoApp.Core.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
@@ -74,7 +77,7 @@ public sealed partial class PlayerView : UserControl
 
     private void PlayerView_DragOver(object sender, DragEventArgs e)
     {
-        e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
+        e.AcceptedOperation = DataPackageOperation.Link;
     }
 
     private void PlayerView_Loaded(object sender, RoutedEventArgs e)
@@ -86,42 +89,50 @@ public sealed partial class PlayerView : UserControl
 
         disposable = new CompositeDisposable();
 
-        Observable
-            .FromEventPattern<PointerRoutedEventArgs>(ControlPanel, nameof(Control.PointerEntered))
-            .Subscribe(_ => inTheBar = true)
-            .DisposeWith(disposable);
-
-        Observable
-            .FromEventPattern<PointerRoutedEventArgs>(ControlPanel, nameof(Control.PointerExited))
-            .Subscribe(_ => inTheBar = false)
-            .DisposeWith(disposable);
-
         var activity = Observable.FromEventPattern<PointerRoutedEventArgs>(this, nameof(Control.PointerMoved));
 
         activity
-            .Subscribe(_ => VisualStateManager.GoToState(this, "Normal", true))
+            .Subscribe(_ => ShowToolbar())
             .DisposeWith(disposable);
 
         activity
             .Throttle(TimeSpan.FromSeconds(1.2))
             .ObserveOn(SynchronizationContext.Current)
-            .Where(_ => !inTheBar && !Toolbar.IsFlyoutOpen)
-            .Subscribe(_ => NewMethod())
+            .Where(_ => ViewModel.State == PlaybackState.Playing && !Toolbar.ContainsPointer && !Toolbar.IsFlyoutOpen)
+            .Subscribe(_ => HideToolbar())
             .DisposeWith(disposable);
 
-        Bindings.Initialize();
+        this.Bindings.Initialize();
     }
 
-    private bool NewMethod()
+    private void ShowToolbar()
     {
-        return VisualStateManager.GoToState(this, "HiddenControlPanel", true);
+        if (VisualStateManager.GoToState(this, "ToolbarVisible", true))
+        {
+            ProtectedCursor = null;
+        }
     }
 
-    private bool inTheBar;
+    private void HideToolbar()
+    {
+        if (VisualStateManager.GoToState(this, "ToolbarHidden", true))
+        {
+            Toolbar.Focus(FocusState.Programmatic);
+
+            if (ProtectedCursor == null)
+            {
+                ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
+            }
+
+            ProtectedCursor.Dispose();
+        } 
+    }
 
     private void PlayerView_Unloaded(object sender, RoutedEventArgs e)
     {
-        Bindings.StopTracking();
+        this.Bindings.StopTracking();
+
+        ProtectedCursor?.Dispose();
 
         disposable?.Dispose();
         disposable = null;
@@ -132,7 +143,7 @@ public sealed partial class PlayerView : UserControl
 
     public PlayerViewModel ViewModel { get; }
 
-    private void VideoView_Initialized(object sender, LibVLCSharp.Platforms.Windows.InitializedEventArgs e)
+    private void VideoView_Initialized(object sender, InitializedEventArgs e)
     {
         playbackService.Initialize(sender, e.SwapChainOptions);
     }
@@ -175,9 +186,9 @@ public sealed partial class PlayerView : UserControl
                 return true;
 
             case Windows.System.VirtualKey.Space:
-                if (e.OriginalSource is Control control == false || control.FocusState == FocusState.Unfocused)
+                if (e.OriginalSource is Button button == false || button.FocusState == FocusState.Unfocused)
                 {
-                    //  ViewModel.TogglePlaybackCommand.Execute(null);
+                    TogglePlaybackState();
                     return true;
                 }
                 else
@@ -203,6 +214,25 @@ public sealed partial class PlayerView : UserControl
 
         VisualStateManager.GoToState(this, "VolumeNotification", true);
     }
+
+    private void TogglePlaybackState()
+    {
+        if(ViewModel.State != PlaybackState.Paused && ViewModel.State != PlaybackState.Playing)
+        {
+            return;
+        }
+
+        notificationDisposable?.Dispose();
+
+        notificationDisposable = Observable
+            .Timer(TimeSpan.FromSeconds(1))
+            .ObserveOn(SynchronizationContext.Current!)
+            .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
+
+        ViewModel.TogglePlaybackCommand.Execute(null);
+        VisualStateManager.GoToState(this, "PlaybackStateNotification", true);
+    }
+
     private void SkipPosition(int direction)
     {
         notificationDisposable?.Dispose();
@@ -224,15 +254,5 @@ public sealed partial class PlayerView : UserControl
         }
 
         VisualStateManager.GoToState(this, "SkipNotification", true);
-    }
-
-    private void ControlPanel_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        e.Handled = true;
-    }
-
-    private void ControlPanel_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-    {
-        e.Handled = true;
     }
 }

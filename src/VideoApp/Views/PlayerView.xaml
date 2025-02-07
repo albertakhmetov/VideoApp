@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:VideoApp.Views"
              xmlns:vlc="using:LibVLCSharp.Platforms.Windows"
+             xmlns:models="using:VideoApp.Core.Models"
              xmlns:converters="using:VideoApp.Converters"
              xmlns:controls="using:VideoApp.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,25 +12,28 @@
     
     <Grid x:Name="Root">
         <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal">
+            <VisualStateGroup x:Name="ToolbarStates">
+                <VisualState x:Name="ToolbarVisible">
                     <Storyboard>
                     </Storyboard>
                 </VisualState>
-                <VisualState x:Name="HiddenControlPanel">
+                <VisualState x:Name="ToolbarHidden">
                     <Storyboard>
                         <DoubleAnimation Duration="0:0:0.1" To="0"
                                          Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="ControlPanel"/>
+                                         Storyboard.TargetName="Toolbar"/>
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
-            <VisualStateGroup x:Name="Notifications">
+            <VisualStateGroup x:Name="NotificationStates">
                 <VisualState x:Name="NoNotifications">
                     <Storyboard>
                         <DoubleAnimation Duration="0:0:0.1" To="0"
                                          Storyboard.TargetProperty="Opacity" 
                                          Storyboard.TargetName="VolumeOsd"/>
+                        <DoubleAnimation Duration="0:0:0.1" To="0"
+                                         Storyboard.TargetProperty="Opacity" 
+                                         Storyboard.TargetName="PlaybackStateOsd"/>
                         <DoubleAnimation Duration="0:0:0.1" To="0"
                                          Storyboard.TargetProperty="Opacity" 
                                          Storyboard.TargetName="SkipOsd"/>
@@ -40,6 +44,14 @@
                         <DoubleAnimation Duration="0:0:0.15" To="1"
                                          Storyboard.TargetProperty="Opacity" 
                                          Storyboard.TargetName="VolumeOsd"/>
+                    </Storyboard>
+                </VisualState>
+                <VisualState x:Name="PlaybackStateNotification">
+                    <Storyboard>
+                        <DoubleAnimation Duration="0:0:0.15"
+                                         To="1"
+                                         Storyboard.TargetProperty="Opacity" 
+                                         Storyboard.TargetName="PlaybackStateOsd"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="SkipNotification">
@@ -53,22 +65,17 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <vlc:VideoView Name="VideoControl"
+        <vlc:VideoView x:Name="VideoControl"
                        Initialized="VideoView_Initialized"/>
 
-        <Grid Visibility="{x:Bind converters:Helpers.VisibleIfNot(ViewModel.IsPlaying), Mode=OneWay}"
+        <Grid Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed), Mode=OneWay}"
               Background="Black" />
 
-        <Border Name="VolumeOsd"
+        <Border x:Name="VolumeOsd"
+                Style="{StaticResource OsdBorder}"
                 Opacity="0"
-                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="16,6"
-                Margin="8"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Center">
+                Visibility="{x:Bind converters:Helpers.VisibleIf(VolumeOsd.Opacity), Mode=OneWay}"
+>
             <StackPanel Orientation="Horizontal">
                 <FontIcon Margin="0,4,0,0"  
                           VerticalAlignment="Center"
@@ -83,16 +90,27 @@
             </StackPanel>
         </Border>
 
-        <Border Name="SkipOsd"
+        <Border x:Name="PlaybackStateOsd"
+                Style="{StaticResource OsdBorder}"
                 Opacity="0"
-                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="16,6"
-                Margin="8"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Center">
+                Visibility="{x:Bind converters:Helpers.VisibleIf(PlaybackStateOsd.Opacity), Mode=OneWay}"
+>
+            <StackPanel Orientation="Horizontal">
+                <FontIcon Margin="0,4,0,0"  
+                          VerticalAlignment="Center"
+                          Glyph="{x:Bind converters:Helpers.ToIcon(ViewModel.State), Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.StateText, Mode=OneWay}"
+                           Margin="10,0,0,0"
+                           MinWidth="45"
+                           TextAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{ThemeResource TitleTextBlockStyle}"/>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="SkipOsd"
+                Opacity="0"
+                Style="{StaticResource OsdBorder}">
             <StackPanel Orientation="Horizontal">
                 <FontIcon Name="SkipOsdIcon"
                           Margin="0,4,0,0"  
@@ -112,20 +130,9 @@
             </StackPanel>
         </Border>
 
-        <Border x:Name="ControlPanel"
-                MaxWidth="800"
-                Margin="8"
-                VerticalAlignment="Bottom"
-                IsTabStop="False"
-                Tapped="ControlPanel_Tapped"
-                DoubleTapped="ControlPanel_DoubleTapped"
-                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="4,4">
-            <controls:PlayerToolbarControl x:Name="Toolbar"
-                                           ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
-        </Border>
+
+        <controls:PlayerToolbarControl x:Name="Toolbar" 
+                                       Visibility="{x:Bind converters:Helpers.VisibleIf(Toolbar.Opacity), Mode=OneWay}"
+                                       ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
     </Grid>
 </UserControl>

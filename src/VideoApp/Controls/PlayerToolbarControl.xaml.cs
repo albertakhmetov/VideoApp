@@ -49,6 +49,12 @@ public sealed partial class PlayerToolbarControl : UserControl
     public PlayerToolbarControl()
     {
         this.InitializeComponent();
+
+        PointerEntered += (_, _) => ContainsPointer = true;
+        PointerExited += (_, _) => ContainsPointer = false;
+
+        Tapped += (_, e) => e.Handled = true;
+        DoubleTapped += (_, e) => e.Handled = true;
     }
 
     public PlayerViewModel? ViewModel
@@ -56,6 +62,8 @@ public sealed partial class PlayerToolbarControl : UserControl
         get => (PlayerViewModel)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
     }
+
+    public bool ContainsPointer { get; private set; }
 
     public bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen;
 }

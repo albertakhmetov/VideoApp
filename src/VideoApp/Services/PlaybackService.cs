@@ -99,6 +99,9 @@ public sealed class PlaybackService : IPlaybackService
 
         mediaPlayer?.Dispose();
         libVCL?.Dispose();
+
+        mediaPlayer = null;
+        libVCL = null;
     }
 
     public void Initialize(object sender, string[] options)
@@ -233,7 +236,25 @@ public sealed class PlaybackService : IPlaybackService
 
     public void Play()
     {
-        mediaPlayer?.Play();
+        if (!IsInitialized || mediaPlayer == null)
+        {
+            return;
+        }
+
+        if (mediaPlayer.State == VLCState.Paused)
+        {
+            mediaPlayer.Play();
+        }
+        else
+        {
+            mediaPlayer.Play();
+
+            //volumeSubject.OnNext(mediaPlayer.Volume);
+            //positionSubject.OnNext(mediaPlayer.Time);
+
+            //audioTrackSubject.OnNext(mediaPlayer.AudioTrack);
+            //subtitleTrackSubject.OnNext(mediaPlayer.Spu);
+        }
     }
 
     public void Pause()
