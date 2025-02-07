@@ -84,7 +84,7 @@ public partial class App : Application, IApp
         mainWindow.Closed += OnMainWindowClosed;
         mainWindow.AppWindow.Show(true);
 
-        var view = host.Services.GetRequiredKeyedService<UserControl>(nameof(PlayerControlViewModel));
+        var view = host.Services.GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
         mainWindow.Content = view;
 
         host.Services.GetRequiredService<IPlaybackService>()
@@ -134,9 +134,9 @@ public partial class App : Application, IApp
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
-        builder.Services.AddTransient<PlayerControlViewModel>();
+        builder.Services.AddTransient<PlayerViewModel>();
 
-        builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerControlViewModel));
+        builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));
 
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));
         builder.Services.AddKeyedSingleton<CommandBase, TogglePlaybackCommand>(nameof(TogglePlaybackCommand));

@@ -19,6 +19,7 @@
 namespace VideoApp.Core.ViewModels;
 
 using System;
+using System.Collections.Immutable;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -31,6 +32,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 {
     private CompositeDisposable disposable = new CompositeDisposable();
 
+    private readonly IServiceProvider serviceProvider;
     private readonly IApp app;
     private readonly IPlaybackService playbackService;
 
@@ -38,21 +40,20 @@ public class PlayerViewModel : ViewModel, IDisposable
     private PlaybackState state;
     private int volume;
 
-    public PlayerViewModel(
-        IServiceProvider serviceProvider,
-        IApp app,
-        IPlaybackService playbackService,
-        PlayerControlViewModel playerControlViewModel)
+    private ImmutableArray<TrackInfo> audioTracks = [], subtitleTracks = [];
+    private TrackInfo? subtitleTrack;
+    private TrackInfo? audioTrack;
+
+    public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
     {
         if (SynchronizationContext.Current == null)
         {
             throw new InvalidOperationException();
         }
 
+        this.serviceProvider = serviceProvider.NotNull();
         this.app = app.NotNull();
         this.playbackService = playbackService.NotNull();
-
-        PlayerControlViewModel = playerControlViewModel.NotNull();
 
         playbackService
             .Duration
@@ -62,37 +63,60 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         playbackService
             .Position
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref position, x, nameof(Position)))
             .DisposeWith(disposable);
 
         playbackService
             .Volume
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Set(ref volume, x, nameof(Volume)))
             .DisposeWith(disposable);
 
         playbackService
             .State
-            .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => State = x)
             .DisposeWith(disposable);
 
-        OpenMediaFileCommand = serviceProvider
+        playbackService
+            .AudioTracks
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTracks = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTracks
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTracks = x)
+            .DisposeWith(disposable);
+
+        playbackService
+            .AudioTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => AudioTrack = AudioTracks.FirstOrDefault(i => i.Id == x))
+            .DisposeWith(disposable);
+
+        playbackService
+            .SubtitleTrack
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => SubtitleTrack = SubtitleTracks.FirstOrDefault(i => i.Id == x))
+            .DisposeWith(disposable);
+
+        OpenMediaFileCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
-        TogglePlaybackCommand = serviceProvider
+        TogglePlaybackCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(TogglePlaybackCommand));
 
-        ToggleFullScreenCommand = new RelayCommand(x => app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
+        ToggleFullScreenCommand = new RelayCommand(x => this.app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
-        SkipBackCommand = new RelayCommand(_ => playbackService.SkipBack(TimeSpan.FromSeconds(10)));
-        SkipForwardCommand = new RelayCommand(_ => playbackService.SkipForward(TimeSpan.FromSeconds(30)));
+        SkipBackCommand = new RelayCommand(_ => SkipBack());
+        SkipForwardCommand = new RelayCommand(_ => SkipForward());
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
     }
-
-    public PlayerControlViewModel PlayerControlViewModel { get; }
 
     public double Duration
     {
@@ -132,6 +156,42 @@ public class PlayerViewModel : ViewModel, IDisposable
         _ => ""
     };
 
+    public ImmutableArray<TrackInfo> AudioTracks
+    {
+        get => audioTracks;
+        private set => Set(ref audioTracks, value);
+    }
+
+    public ImmutableArray<TrackInfo> SubtitleTracks
+    {
+        get => subtitleTracks;
+        private set => Set(ref subtitleTracks, value);
+    }
+
+    public TrackInfo? AudioTrack
+    {
+        get => audioTrack;
+        set
+        {
+            if (value != null && Set(ref audioTrack, value))
+            {
+                playbackService.SetAudioTrack(value.Id);
+            }
+        }
+    }
+
+    public TrackInfo? SubtitleTrack
+    {
+        get => subtitleTrack;
+        set
+        {
+            if (value != null && Set(ref subtitleTrack, value))
+            {
+                playbackService.SetSubtitleTrack(value.Id);
+            }
+        }
+    }
+
     public CommandBase OpenMediaFileCommand { get; }
 
     public ICommand TogglePlaybackCommand { get; }
@@ -144,6 +204,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public ICommand AdjustVolumeCommand { get; }
 
+
     public void Dispose()
     {
         if (!disposable.IsDisposed)
@@ -152,7 +213,7 @@ public class PlayerViewModel : ViewModel, IDisposable
         }
     }
 
-    private void AdjustVolume(int direction)
+    private async void AdjustVolume(int direction)
     {
         if (direction == 0)
         {
@@ -162,6 +223,18 @@ public class PlayerViewModel : ViewModel, IDisposable
         var newVolume = (Volume / 5) * 5 + Math.Sign(direction) * 5;
 
         playbackService.SetVolume(newVolume);
-        Volume = newVolume;
+        Set(ref volume, await playbackService.Volume.FirstOrDefaultAsync(), nameof(Volume));
+    }
+
+    private async void SkipBack()
+    {
+        playbackService.SkipBack(TimeSpan.FromSeconds(10));
+        Set(ref position, await playbackService.Position.FirstOrDefaultAsync(), nameof(Position));
+    }
+
+    private async void SkipForward()
+    {
+        playbackService.SkipForward(TimeSpan.FromSeconds(30));
+        Set(ref position, await playbackService.Position.FirstOrDefaultAsync(), nameof(Position));
     }
 }

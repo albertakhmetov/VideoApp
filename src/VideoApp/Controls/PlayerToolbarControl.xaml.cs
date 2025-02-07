@@ -27,7 +27,7 @@ public sealed partial class PlayerToolbarControl : UserControl
 {
     public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
         nameof(ViewModel),
-        typeof(PlayerControlViewModel),
+        typeof(PlayerViewModel),
         typeof(PlayerToolbarControl),
         new PropertyMetadata(null, OnViewModelChanged));
 
@@ -57,9 +57,9 @@ public sealed partial class PlayerToolbarControl : UserControl
         DoubleTapped += (_, e) => e.Handled = true;
     }
 
-    public PlayerControlViewModel? ViewModel
+    public PlayerViewModel? ViewModel
     {
-        get => (PlayerControlViewModel)GetValue(ViewModelProperty);
+        get => (PlayerViewModel)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
     }
 
