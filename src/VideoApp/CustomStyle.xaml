@@ -133,7 +133,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="16,6"/>
-        <Setter Property="Margin" Value="8"/>
+        <Setter Property="Margin" Value="8,24"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>

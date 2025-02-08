@@ -37,18 +37,18 @@ using Windows.Storage;
 
 public sealed partial class PlayerView : UserControl
 {
+    private readonly IServiceProvider serviceProvider;
     private readonly IPlaybackService playbackService;
 
     private CompositeDisposable? disposable;
     private IDisposable? notificationDisposable;
 
-    public PlayerView(IPlaybackService playbackService, PlayerViewModel viewModel)
+    public PlayerView(IServiceProvider serviceProvider, IPlaybackService playbackService)
     {
+        this.serviceProvider = serviceProvider.NotNull();
         this.playbackService = playbackService.NotNull();
 
         this.InitializeComponent();
-
-        ViewModel = viewModel.NotNull();
 
         this.Loaded += PlayerView_Loaded;
         this.Unloaded += PlayerView_Unloaded;
@@ -70,7 +70,7 @@ public sealed partial class PlayerView : UserControl
 
             if (file != null)
             {
-                ViewModel.OpenMediaFileCommand.Execute(file.Path);
+                ViewModel?.OpenMediaFileCommand.Execute(file.Path);
             }
         }
     }
@@ -87,6 +87,7 @@ public sealed partial class PlayerView : UserControl
             throw new InvalidOperationException();
         }
 
+        ViewModel = serviceProvider.GetRequiredService<PlayerViewModel>();
         disposable = new CompositeDisposable();
 
         var activity = Observable.FromEventPattern<PointerRoutedEventArgs>(this, nameof(Control.PointerMoved));
@@ -102,7 +103,8 @@ public sealed partial class PlayerView : UserControl
             .Subscribe(_ => HideToolbar())
             .DisposeWith(disposable);
 
-        this.Bindings.Initialize();
+        Bindings.Initialize();
+        Bindings.Update();
     }
 
     private void ShowToolbar()
@@ -130,7 +132,8 @@ public sealed partial class PlayerView : UserControl
 
     private void PlayerView_Unloaded(object sender, RoutedEventArgs e)
     {
-        this.Bindings.StopTracking();
+        ViewModel?.Dispose();
+        Bindings.StopTracking();
 
         playbackService.Pause();
 
@@ -143,7 +146,7 @@ public sealed partial class PlayerView : UserControl
         notificationDisposable = null;
     }
 
-    public PlayerViewModel ViewModel { get; }
+    public PlayerViewModel? ViewModel { get; private set; }
 
     private void VideoView_Initialized(object sender, InitializedEventArgs e)
     {
@@ -152,7 +155,7 @@ public sealed partial class PlayerView : UserControl
 
     protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
     {
-        if (ViewModel.State == PlaybackState.Playing && e.PointerDeviceType == PointerDeviceType.Touch)
+        if (ViewModel?.State == PlaybackState.Playing && e.PointerDeviceType == PointerDeviceType.Touch)
         {
             var position = e.GetPosition(this);
 
@@ -171,7 +174,7 @@ public sealed partial class PlayerView : UserControl
         }
         else
         {
-            ViewModel.ToggleFullScreenCommand.Execute(null);
+            ViewModel?.ToggleFullScreenCommand.Execute(null);
         }
 
         e.Handled = true;
@@ -205,7 +208,7 @@ public sealed partial class PlayerView : UserControl
                 return true;
 
             case Windows.System.VirtualKey.Escape:
-                ViewModel.ToggleFullScreenCommand.Execute(false);
+                ViewModel?.ToggleFullScreenCommand.Execute(false);
                 return true;
 
             case Windows.System.VirtualKey.Space:
@@ -233,14 +236,14 @@ public sealed partial class PlayerView : UserControl
             .ObserveOn(SynchronizationContext.Current!)
             .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
 
-        ViewModel.AdjustVolumeCommand.Execute(direction);
+        ViewModel?.AdjustVolumeCommand.Execute(direction);
 
         VisualStateManager.GoToState(this, "VolumeNotification", true);
     }
 
     private void TogglePlaybackState()
     {
-        if (ViewModel.State != PlaybackState.Paused && ViewModel.State != PlaybackState.Playing)
+        if (ViewModel?.State != PlaybackState.Paused && ViewModel?.State != PlaybackState.Playing)
         {
             return;
         }
@@ -258,6 +261,11 @@ public sealed partial class PlayerView : UserControl
 
     private void SkipPosition(int direction)
     {
+        if (ViewModel?.State != PlaybackState.Playing)
+        {
+            return;
+        }
+
         notificationDisposable?.Dispose();
 
         notificationDisposable = Observable
@@ -267,12 +275,12 @@ public sealed partial class PlayerView : UserControl
 
         if (direction < 0)
         {
-            ViewModel.SkipBackCommand.Execute(null);
+            ViewModel?.SkipBackCommand.Execute(null);
             VisualStateManager.GoToState(this, "RewindNotification", true);
         }
         else
         {
-            ViewModel.SkipForwardCommand.Execute(null);
+            ViewModel?.SkipForwardCommand.Execute(null);
             VisualStateManager.GoToState(this, "ForwardNotification", true);
         }
 

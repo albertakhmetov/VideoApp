@@ -126,6 +126,8 @@ public partial class App : Application, IApp
                 .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand))
                 .Execute(arguments[0]);
         }
+
+        _ = host.RunAsync();
     }
 
     private void SetTitle(string? fileName)
@@ -162,6 +164,8 @@ public partial class App : Application, IApp
         var builder = Host.CreateApplicationBuilder();
 
         builder.Services.AddSingleton<MainWindow>();
+
+        builder.Services.AddSingleton<AwakeService>();
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
