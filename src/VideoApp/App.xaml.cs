@@ -55,6 +55,7 @@ public partial class App : Application, IApp
             instance = new App(args);
         });
 
+        instance?.host?.StopAsync().Wait();
         instance?.host?.Dispose();
     }
 
