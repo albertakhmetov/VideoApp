@@ -19,6 +19,7 @@
 namespace VideoApp.Controls;
 
 using System.Windows.Input;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -71,7 +72,7 @@ public class AppSlider : Control
     {
         if (d is AppSlider slider)
         {
-            slider.SetToolTip();
+            slider.UpdateToolTip();
         }
     }
 
@@ -90,7 +91,7 @@ public class AppSlider : Control
             else
             {
                 slider.UpdateThumbPosition();
-                slider.SetToolTip();
+                slider.UpdateToolTip();
             }
         }
     }
@@ -118,13 +119,23 @@ public class AppSlider : Control
     }
 
     private Thumb? thumb;
+    private bool isThumbUnderPoint;
+
     private Rectangle? decrease, track;
 
     private double thumbPosition;
+    private ToolTip toolTip;
 
     public AppSlider()
     {
-        this.DefaultStyleKey = typeof(AppSlider);
+        DefaultStyleKey = typeof(AppSlider);
+
+        toolTip = new ToolTip
+        {
+            Content = Value,
+            VerticalOffset = 10,
+            Placement = PlacementMode.Top,
+        };
     }
 
     public IValueConverter ThumbTipValueConverter
@@ -195,9 +206,34 @@ public class AppSlider : Control
             thumb.DragStarted += Thumb_DragStarted;
             thumb.DragCompleted += Thumb_DragCompleted;
             thumb.DragDelta += Thumb_DragDelta;
+
+            thumb.PointerEntered += Thumb_PointerEntered;
+            thumb.PointerExited += Thumb_PointerExited;
         }
 
-        SetToolTip();
+        UpdateToolTip();
+    }
+
+    private void Thumb_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (thumb != null && !thumb.IsDragging)
+        {
+            toolTip.IsOpen = false;
+            ToolTipService.SetToolTip(thumb, null);
+        }
+
+        isThumbUnderPoint = false;
+    }
+
+    private void Thumb_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (thumb != null)
+        {
+            ToolTipService.SetToolTip(thumb, toolTip);
+            toolTip.IsOpen = true;
+        }
+
+        isThumbUnderPoint = true;
     }
 
     protected override void OnKeyDown(KeyRoutedEventArgs e)
@@ -235,15 +271,22 @@ public class AppSlider : Control
     {
         thumbPosition = decrease?.ActualWidth ?? 0;
 
-        if (GetTemplateChild("PART_THUMB_TOOLTIP") is ToolTip toolTip)
+        if (thumb != null &&!isThumbUnderPoint)
         {
             toolTip.IsOpen = false;
+            ToolTipService.SetToolTip(thumb, null);
         }
     }
 
     private void Thumb_DragStarted(object sender, DragStartedEventArgs e)
     {
         thumbPosition = decrease?.ActualWidth ?? 0;
+
+        if (thumb != null)
+        {
+            ToolTipService.SetToolTip(thumb, toolTip);
+            toolTip.IsOpen = true;
+        }
     }
 
     private void Track_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -270,7 +313,6 @@ public class AppSlider : Control
         var newValue = Convert.ToInt32(value);
         Value = newValue == MaxValue ? newValue : (newValue / StepFrequency * StepFrequency);
         PositionCommand?.Execute(Value);
-        ReOpenToolTip();
     }
 
     private void UpdateThumbPosition()
@@ -278,25 +320,15 @@ public class AppSlider : Control
         if (decrease != null && track != null && thumb != null && track.ActualWidth > 0)
         {
             decrease.SetValue(Rectangle.WidthProperty, Value * 1d / MaxValue * (track.ActualWidth - thumb.ActualWidth));
+
+            toolTip.HorizontalOffset = decrease.ActualWidth;
         }
     }
 
-    private void ReOpenToolTip()
+    private void UpdateToolTip()
     {
-        if (GetTemplateChild("PART_THUMB_TOOLTIP") is ToolTip toolTip)
-        {
-            toolTip.IsOpen = false;
-            toolTip.IsOpen = true;
-        }
-    }
-
-    private void SetToolTip()
-    {
-        if (GetTemplateChild("PART_THUMB_TOOLTIP") is ToolTip toolTip)
-        {
-            toolTip.Content = ThumbTipValueConverter == null
-                ? Value.ToString()
-                : ThumbTipValueConverter.Convert(Value, typeof(string), null, null);
-        }
+        toolTip.Content = ThumbTipValueConverter == null
+                 ? Value.ToString()
+                 : ThumbTipValueConverter.Convert(Value, typeof(string), null, null);
     }
 }

@@ -337,9 +337,6 @@
                                     Grid.Column="1" 
                                     FocusVisualMargin="-14,-6,-14,-6" 
                                     AutomationProperties.AccessibilityView="Raw">
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip x:Name="PART_THUMB_TOOLTIP" VerticalOffset="10" />
-                                    </ToolTipService.ToolTip>
                                 </Thumb>
                             </Grid>
                         </Grid>
