@@ -189,6 +189,11 @@ public sealed partial class PlayerView : UserControl
 
     private bool ProcessKey(KeyRoutedEventArgs e)
     {
+        if (e.OriginalSource is PlayerView == false && e.OriginalSource is VideoView== false)
+        {
+            return false;
+        }
+
         switch (e.Key)
         {
             case Windows.System.VirtualKey.Up:
@@ -212,15 +217,9 @@ public sealed partial class PlayerView : UserControl
                 return true;
 
             case Windows.System.VirtualKey.Space:
-                if (e.OriginalSource is Button button == false || button.FocusState == FocusState.Unfocused)
-                {
-                    TogglePlaybackState();
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                TogglePlaybackState();
+                return true;
+
 
             default:
                 return false;

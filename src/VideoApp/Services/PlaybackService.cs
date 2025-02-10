@@ -47,6 +47,13 @@ public sealed class PlaybackService : IPlaybackService
 
     public PlaybackService()
     {
+        Core.Initialize("./LibVLC");
+
+        if (!File.Exists("./LibVLC/plugins/plugins.dat"))
+        {
+            new LibVLC("--reset-plugins-cache");
+        }
+
         mediaFileNameSubject = new BehaviorSubject<string?>(null);
         stateSubject = new BehaviorSubject<PlaybackState>(PlaybackState.NotInitialized);
         durationSubject = new BehaviorSubject<int>(0);

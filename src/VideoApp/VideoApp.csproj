@@ -27,8 +27,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<VlcWindowsX64TargetDir>LibVLC</VlcWindowsX64TargetDir>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<OutputPath>..\..\target\$(Configuration)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<LangVersion>12</LangVersion>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>

@@ -88,4 +88,4 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 
 .editorconfig
-/target/test
+/target/*
