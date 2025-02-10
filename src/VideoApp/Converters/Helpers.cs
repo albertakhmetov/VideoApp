@@ -54,9 +54,9 @@ internal static class Helpers
         _ => ""
     };
 
-    public static string ToString(double value)
+    public static string ToString(long value)
     {
-        return TimeSpan.FromSeconds(Convert.ToInt64(value / 1000)).ToString();
+        return TimeSpan.FromSeconds(value).ToString();
     }
 
     public static bool IsEnabled(int count)

@@ -1,179 +1,201 @@
-<UserControl x:Class="VideoApp.Views.PlayerView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:VideoApp.Views"
-             xmlns:vlc="using:LibVLCSharp.Platforms.Windows"
-             xmlns:models="using:VideoApp.Core.Models"
-             xmlns:converters="using:VideoApp.Converters"
-             xmlns:controls="using:VideoApp.Controls"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d">
+<UserControl 
+    x:Class="VideoApp.Views.PlayerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VideoApp.Views"
+    xmlns:vlc="using:LibVLCSharp.Platforms.Windows"
+    xmlns:models="using:VideoApp.Core.Models"
+    xmlns:converters="using:VideoApp.Converters"
+    xmlns:controls="using:VideoApp.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
     
     <Grid x:Name="Root">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="ToolbarStates">
                 <VisualState x:Name="ToolbarVisible">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.1" To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="Toolbar"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.1" To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="Toolbar"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="ToolbarHidden">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.15" To="0"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="Toolbar"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.15" To="0"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="Toolbar"/>
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
             <VisualStateGroup x:Name="NotificationStates">
                 <VisualState x:Name="NoNotifications">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.1" To="0"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="VolumeOsd"/>
-                        <DoubleAnimation Duration="0:0:0.1" To="0"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="PlaybackStateOsd"/>
-                        <DoubleAnimation Duration="0:0:0.1" To="0"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="SkipOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.1" To="0"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="VolumeOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.1" To="0"
+                            Storyboard.TargetProperty="Opacity"   
+                            Storyboard.TargetName="PlaybackStateOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.1" To="0"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="SkipOsd"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="VolumeNotification">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.15" To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="VolumeOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.15" To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="VolumeOsd"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="PlaybackStateNotification">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.15"
-                                         To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="PlaybackStateOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.15"
+                            To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="PlaybackStateOsd"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="RewindNotification">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0"
-                                         To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="SkipOsdRewind"/>
-                        <DoubleAnimation Duration="0:0:0.15"
-                                         To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="SkipOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0" To="1"
+                            Storyboard.TargetProperty="Opacity"
+                            Storyboard.TargetName="SkipOsdRewind"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.15" To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="SkipOsd"/>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="ForwardNotification">
                     <Storyboard>
-                        <DoubleAnimation Duration="0:0:0"
-                                         To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="SkipOsdForward"/>
-                        <DoubleAnimation Duration="0:0:0.15"
-                                         To="1"
-                                         Storyboard.TargetProperty="Opacity" 
-                                         Storyboard.TargetName="SkipOsd"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0" To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="SkipOsdForward"/>
+                        <DoubleAnimation 
+                            Duration="0:0:0.15" To="1"
+                            Storyboard.TargetProperty="Opacity" 
+                            Storyboard.TargetName="SkipOsd"/>
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <vlc:VideoView x:Name="VideoControl"                      
-                       Initialized="VideoView_Initialized"/>
+        <vlc:VideoView 
+            x:Name="VideoControl" 
+            Initialized="VideoView_Initialized"/>
 
-        <Grid Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed), Mode=OneWay}"
-              Background="Black" />
+        <Grid 
+            Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed), Mode=OneWay}"
+            Background="Black" />
 
-        <Border x:Name="VolumeOsd"
-                Style="{StaticResource OsdBorder}"
-                Opacity="0"
-                Visibility="{x:Bind converters:Helpers.VisibleIf(VolumeOsd.Opacity), Mode=OneWay}"
->
+        <Border 
+            x:Name="VolumeOsd"
+            Style="{StaticResource OsdBorder}"
+            Opacity="0"
+            Visibility="{x:Bind converters:Helpers.VisibleIf(VolumeOsd.Opacity), Mode=OneWay}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon Margin="0,4,0,0"  
-                          VerticalAlignment="Center"
-                          Glyph="{x:Bind converters:Helpers.ToVolumeIcon(ViewModel.Volume), Mode=OneWay}" />
-                <TextBlock Text="{x:Bind ViewModel.Volume, Mode=OneWay}"
-                           Margin="10,0,0,0"
-                           Grid.Column="1"
-                           MinWidth="45"
-                           TextAlignment="Right"
-                           VerticalAlignment="Center"
-                           Style="{ThemeResource TitleTextBlockStyle}"/>
+                <FontIcon 
+                    Margin="0,4,0,0"  
+                    VerticalAlignment="Center"
+                    Glyph="{x:Bind converters:Helpers.ToVolumeIcon(ViewModel.Volume), Mode=OneWay}" />
+                <TextBlock 
+                    Text="{x:Bind ViewModel.Volume, Mode=OneWay}"
+                    Margin="10,0,0,0"
+                    Grid.Column="1"
+                    MinWidth="45"
+                    TextAlignment="Right"
+                    VerticalAlignment="Center"
+                    Style="{ThemeResource TitleTextBlockStyle}"/>
             </Grid>
         </Border>
 
-        <Border x:Name="PlaybackStateOsd"
-                Style="{StaticResource OsdBorder}"
-                Opacity="0"
-                Visibility="{x:Bind converters:Helpers.VisibleIf(PlaybackStateOsd.Opacity), Mode=OneWay}"
->
+        <Border 
+            x:Name="PlaybackStateOsd"
+            Style="{StaticResource OsdBorder}"
+            Opacity="0"
+            Visibility="{x:Bind converters:Helpers.VisibleIf(PlaybackStateOsd.Opacity), Mode=OneWay}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon Margin="0,4,0,0"  
-                          VerticalAlignment="Center"
-                          Glyph="{x:Bind converters:Helpers.ToIcon(ViewModel.State), Mode=OneWay}" />
-                <TextBlock Text="{x:Bind ViewModel.StateText, Mode=OneWay}"
-                           Grid.Column="1"
-                           Margin="10,0,0,0"
-                           MinWidth="100"
-                           TextAlignment="Right"
-                           VerticalAlignment="Center"
-                           Style="{ThemeResource TitleTextBlockStyle}"/>
+                <FontIcon 
+                    Margin="0,4,0,0"  
+                    VerticalAlignment="Center"
+                    Glyph="{x:Bind converters:Helpers.ToIcon(ViewModel.State), Mode=OneWay}" />
+                <TextBlock 
+                    Text="{x:Bind ViewModel.StateText, Mode=OneWay}"
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    MinWidth="100"
+                    TextAlignment="Right"
+                    VerticalAlignment="Center"
+                    Style="{ThemeResource TitleTextBlockStyle}"/>
             </Grid>
         </Border>
 
-        <Border x:Name="SkipOsd"
-                Opacity="0"
-                Style="{StaticResource OsdBorder}">
+        <Border 
+            x:Name="SkipOsd"
+            Opacity="0"
+            Style="{StaticResource OsdBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon Name="SkipOsdRewind"
-                          Grid.Column="0"
-                          Margin="4,4,0,0"
-                          Glyph="&#xEB9E;"
-                          Opacity="0"
-                          VerticalAlignment="Center" />
-                <FontIcon Name="SkipOsdForward"
-                          Grid.Column="2"
-                          Margin="16,4,4,0"
-                          Glyph="&#xEB9D;"
-                          Opacity="0"
-                          VerticalAlignment="Center" />
-                <TextBlock Margin="10,0,0,0"
-                           Grid.Column="1"
-                           MinWidth="180"
-                           TextAlignment="Right"
-                           VerticalAlignment="Center">
-                    <Run FontSize="28"
-                         Text="{x:Bind converters:Helpers.ToString(ViewModel.Position), Mode=OneWay}"/>
-                    <Run FontSize="28"
-                         Text="/"/>
-                    <Run FontSize="14"
-                         Text="{x:Bind converters:Helpers.ToString(ViewModel.Duration), Mode=OneWay}"/>
+                <FontIcon 
+                    Name="SkipOsdRewind"
+                    Grid.Column="0"
+                    Margin="4,4,0,0"
+                    Glyph="&#xEB9E;"
+                    Opacity="0"
+                    VerticalAlignment="Center" />
+                <FontIcon 
+                    Name="SkipOsdForward"
+                    Grid.Column="2"
+                    Margin="16,4,4,0"
+                    Glyph="&#xEB9D;"
+                    Opacity="0"
+                    VerticalAlignment="Center" />
+                <TextBlock 
+                    Margin="10,0,0,0"
+                    Grid.Column="1"
+                    MinWidth="180"
+                    TextAlignment="Right"
+                    VerticalAlignment="Center">
+                    <Run 
+                        FontSize="28"
+                        Text="{x:Bind converters:Helpers.ToString(ViewModel.Position), Mode=OneWay}"/>
+                    <Run 
+                        FontSize="28"
+                        Text="/"/>
+                    <Run 
+                        FontSize="14"
+                        Text="{x:Bind converters:Helpers.ToString(ViewModel.Duration), Mode=OneWay}"/>
                 </TextBlock>
             </Grid>
         </Border>
         
-        <controls:PlayerToolbarControl x:Name="Toolbar" 
-                                       Visibility="{x:Bind converters:Helpers.VisibleIf(Toolbar.Opacity), Mode=OneWay}"
-                                       ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
+        <controls:PlayerToolbarControl 
+            x:Name="Toolbar" 
+            Visibility="{x:Bind converters:Helpers.VisibleIf(Toolbar.Opacity), Mode=OneWay}"
+            ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
     </Grid>
 </UserControl>

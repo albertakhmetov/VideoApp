@@ -52,6 +52,7 @@ class AwakeService : IDisposable, IHostedService
         {
             throw new InvalidOperationException();
         }
+
         this.playbackService
              .State
              .Where(x => x == Core.Models.PlaybackState.Playing)

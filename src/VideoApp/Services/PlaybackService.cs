@@ -37,18 +37,20 @@ public sealed class PlaybackService : IPlaybackService
 
     private readonly BehaviorSubject<string?> mediaFileNameSubject;
     private readonly BehaviorSubject<PlaybackState> stateSubject;
-    private readonly BehaviorSubject<long> durationSubject, positionSubject;
+    private readonly BehaviorSubject<int> durationSubject, positionSubject;
     private readonly BehaviorSubject<int> volumeSubject;
 
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
 
+    private long? lastSetPosition;
+
     public PlaybackService()
     {
         mediaFileNameSubject = new BehaviorSubject<string?>(null);
         stateSubject = new BehaviorSubject<PlaybackState>(PlaybackState.NotInitialized);
-        durationSubject = new BehaviorSubject<long>(0);
-        positionSubject = new BehaviorSubject<long>(0);
+        durationSubject = new BehaviorSubject<int>(0);
+        positionSubject = new BehaviorSubject<int>(0);
         volumeSubject = new BehaviorSubject<int>(100);
 
         audioTrackInfoSubject = new BehaviorSubject<ImmutableArray<TrackInfo>>([]);
@@ -74,9 +76,9 @@ public sealed class PlaybackService : IPlaybackService
 
     public IObservable<PlaybackState> State { get; }
 
-    public IObservable<long> Duration { get; }
+    public IObservable<int> Duration { get; }
 
-    public IObservable<long> Position { get; }
+    public IObservable<int> Position { get; }
 
     public IObservable<int> Volume { get; }
 
@@ -112,14 +114,20 @@ public sealed class PlaybackService : IPlaybackService
 
             Observable
                 .FromEventPattern<MediaPlayerLengthChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.LengthChanged))
-                .Select(x => x.EventArgs.Length)
+                .Select(x => Convert.ToInt32(x.EventArgs.Length / 1000))
                 .Subscribe(x => durationSubject.OnNext(x))
                 .DisposeWith(disposable);
 
             Observable
-                .FromEventPattern<MediaPlayerTimeChangedEventArgs>(mediaPlayer, nameof(MediaPlayer.TimeChanged))
-                .Select(x => x.EventArgs.Time)
-                .Subscribe(x => positionSubject.OnNext(x))
+                .Interval(TimeSpan.FromMilliseconds(500))
+                .Select(x => Convert.ToInt32(mediaPlayer.Time / 1000))
+                .Where(x => lastSetPosition == null || lastSetPosition == x)
+                .Distinct()
+                .Subscribe(x =>
+                {
+                    lastSetPosition = null;
+                    positionSubject.OnNext(x);
+                })
                 .DisposeWith(disposable);
 
             Observable
@@ -219,6 +227,7 @@ public sealed class PlaybackService : IPlaybackService
             }
 
             mediaPlayer.Time = 0;
+            positionSubject.OnNext(0);
 
             await Task.Delay(500);
 
@@ -269,35 +278,39 @@ public sealed class PlaybackService : IPlaybackService
 
     public bool SetPosition(double position)
     {
-        return SetPosition(Convert.ToInt64(position));
+        return SetPosition(Convert.ToInt32(position));
     }
 
-    public bool SetPosition(long position)
+    public bool SetPosition(int position)
     {
         if (!IsInitialized || mediaPlayer == null)
         {
             return false;
         }
 
-        var newPosition = Math.Max(0, Math.Min(mediaPlayer.Length - 1, position));
+        var newPosition = Math.Max(0, Math.Min(durationSubject.Value - 1, position));
 
-        if (Math.Abs(newPosition - positionSubject.Value) < 1000)
+        if (Math.Abs(newPosition - positionSubject.Value) < 1)
         {
             return false;
         }
 
-        mediaPlayer.Time = newPosition;
+        lastSetPosition = newPosition;
+        mediaPlayer.Time = newPosition * 1000;
+
+        positionSubject.OnNext(newPosition);
+
         return true;
     }
 
     public bool SkipBack(TimeSpan timeSpan)
     {
-        return SetPosition(positionSubject.Value - timeSpan.TotalMilliseconds);
+        return SetPosition(positionSubject.Value - timeSpan.TotalSeconds);
     }
 
     public bool SkipForward(TimeSpan timeSpan)
     {
-        return SetPosition(positionSubject.Value + timeSpan.TotalMilliseconds);
+        return SetPosition(positionSubject.Value + timeSpan.TotalSeconds);
     }
 
     public bool SetVolume(int volume)

@@ -36,9 +36,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     private readonly IApp app;
     private readonly IPlaybackService playbackService;
 
-    private double duration, position;
+    private int duration, position, volume;
     private PlaybackState state;
-    private int volume;
 
     private ImmutableArray<TrackInfo> audioTracks = [], subtitleTracks = [];
     private TrackInfo? subtitleTrack;
@@ -63,9 +62,8 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         playbackService
             .Position
-            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Set(ref position, x, nameof(Position)))
+            .Subscribe(x => Position = x)
             .DisposeWith(disposable);
 
         playbackService
@@ -119,18 +117,19 @@ public class PlayerViewModel : ViewModel, IDisposable
         SkipBackCommand = new RelayCommand(_ => SkipBack());
         SkipForwardCommand = new RelayCommand(_ => SkipForward());
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
+        PositionCommand = new RelayCommand(x => SetPosition(x));
     }
 
-    public double Duration
+    public int Duration
     {
         get => duration;
         private set => Set(ref duration, value);
     }
 
-    public double Position
+    public int Position
     {
         get => position;
-        set => playbackService.SetPosition(value);
+        set => Set(ref position, value);
     }
 
     public int Volume
@@ -209,6 +208,9 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public ICommand AdjustVolumeCommand { get; }
 
+    public ICommand PositionCommand { get; }
+
+    public ICommand SeekingModeCommand { get; }
 
     public void Dispose()
     {
@@ -231,15 +233,21 @@ public class PlayerViewModel : ViewModel, IDisposable
         Set(ref volume, await playbackService.Volume.FirstOrDefaultAsync(), nameof(Volume));
     }
 
-    private async void SkipBack()
+    private void SkipBack()
     {
         playbackService.SkipBack(TimeSpan.FromSeconds(10));
-        Set(ref position, await playbackService.Position.FirstOrDefaultAsync(), nameof(Position));
     }
 
-    private async void SkipForward()
+    private void SkipForward()
     {
         playbackService.SkipForward(TimeSpan.FromSeconds(10));
-        Set(ref position, await playbackService.Position.FirstOrDefaultAsync(), nameof(Position));
+    }
+
+    private void SetPosition(object? x)
+    {
+        if (x is int newPosition)
+        {
+            playbackService.SetPosition(newPosition);
+        }
     }
 }

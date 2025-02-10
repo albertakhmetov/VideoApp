@@ -17,34 +17,62 @@
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Stroke" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AccentFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Stroke" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0"
+                                                Value="{ThemeResource AccentFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Fill" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Foreground" 
+                                            Storyboard.TargetName="ContentPresenter">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Stroke" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AccentFillColorTertiaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Stroke" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame
+                                                KeyTime="0"
+                                                Value="{ThemeResource AccentFillColorTertiaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Fill" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Foreground" 
+                                            Storyboard.TargetName="ContentPresenter">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Stroke" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AccentFillColorDisabledBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Stroke" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource AccentFillColorDisabledBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -84,25 +112,41 @@
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Background" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="Border">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames
+                                            Storyboard.TargetProperty="Background" 
+                                            Storyboard.TargetName="Border">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Foreground" 
+                                            Storyboard.TargetName="ContentPresenter">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetProperty="Foreground" 
+                                            Storyboard.TargetName="ContentPresenter">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0"
+                                                Value="{ThemeResource TextFillColorDisabledBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

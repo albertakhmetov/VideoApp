@@ -11,15 +11,17 @@
     <NavigationView>
         <ScrollView Grid.Column="1">
             <StackPanel>
-                <TextBlock Text="Settings"
-                           Style="{ThemeResource TitleLargeTextBlockStyle}"/>
+                <TextBlock
+                    Text="Settings"
+                    Style="{ThemeResource TitleLargeTextBlockStyle}"/>
 
-                <TextBlock Text="Appearance"
-                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <TextBlock 
+                    Text="Appearance"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"/>
 
-
-                <TextBlock Text="About this app"
-                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <TextBlock 
+                    Text="About this app"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"/>
             </StackPanel>
         </ScrollView>
     </NavigationView>

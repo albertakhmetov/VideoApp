@@ -24,9 +24,9 @@ public class TimeValueConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is double doubleValue)
+        if (value is int seconds)
         {
-            return TimeSpan.FromSeconds(System.Convert.ToInt64(doubleValue / 1000)).ToString();
+            return TimeSpan.FromSeconds(seconds).ToString();
         }
 
         return value;

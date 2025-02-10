@@ -23,7 +23,7 @@ using Microsoft.UI.Xaml.Controls;
 using VideoApp.Core;
 using VideoApp.Core.ViewModels;
 
-public sealed partial class PlayerToolbarControl : UserControl
+public partial class PlayerToolbarControl : UserControl
 {
     public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
         nameof(ViewModel),

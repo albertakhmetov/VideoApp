@@ -28,9 +28,9 @@ public interface IPlaybackService : IDisposable
 
     IObservable<string?> MediaFileName { get; }
 
-    IObservable<long> Duration { get; }
+    IObservable<int> Duration { get; }
 
-    IObservable<long> Position { get; }
+    IObservable<int> Position { get; }
 
     IObservable<int> Volume { get; }
 
@@ -58,7 +58,7 @@ public interface IPlaybackService : IDisposable
 
     bool SetPosition(double position);
 
-    bool SetPosition(long position);
+    bool SetPosition(int position);
 
     bool SkipBack(TimeSpan timeSpan);
 
