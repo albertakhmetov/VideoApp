@@ -118,6 +118,7 @@ public class PlayerViewModel : ViewModel, IDisposable
         SkipForwardCommand = new RelayCommand(_ => SkipForward());
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
         PositionCommand = new RelayCommand(x => SetPosition(x));
+        ExitCommand = new RelayCommand(_ => app.Exit());
     }
 
     public int Duration
@@ -210,7 +211,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public ICommand PositionCommand { get; }
 
-    public ICommand SeekingModeCommand { get; }
+    public ICommand ExitCommand { get; }
 
     public void Dispose()
     {

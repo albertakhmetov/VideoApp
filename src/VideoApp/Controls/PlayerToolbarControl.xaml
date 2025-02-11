@@ -180,15 +180,6 @@
                         </Button.Flyout>
                     </Button>
 
-                    <Button 
-                        Command="{x:Bind ViewModel.ToggleFullScreenCommand}"
-                        Style="{StaticResource PlaybackButton}">
-
-                        <Button.Content>
-                            <FontIcon Margin="0,0,0,0" Glyph="&#xE740;" />
-                        </Button.Content>
-                    </Button>
-
                     <Button Style="{StaticResource PlaybackButton}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xE712;" />
@@ -196,8 +187,16 @@
 
                         <Button.Flyout>
                             <MenuFlyout x:Name="MenuFlyout">
+                                <MenuFlyoutItem
+                                    Icon="FullScreen"
+                                    Text="Full Screen"
+                                    Command="{x:Bind ViewModel.ToggleFullScreenCommand}"/>
+
                                 <MenuFlyoutSeparator/>
-                                <MenuFlyoutItem Text="Settings" Command="{x:Bind ViewModel.SettingsCommand}"/>
+
+                                <MenuFlyoutItem
+                                    Text="Exit"
+                                    Command="{x:Bind ViewModel.ExitCommand}"/>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
