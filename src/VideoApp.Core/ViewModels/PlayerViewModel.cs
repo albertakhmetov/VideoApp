@@ -62,7 +62,6 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         playbackService
             .Position
-            //.Throttle(TimeSpan.FromMilliseconds(50))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Position = x)
             .DisposeWith(disposable);

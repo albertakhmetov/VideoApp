@@ -126,9 +126,9 @@ public sealed class PlaybackService : IPlaybackService
                 .DisposeWith(disposable);
 
             Observable.
-                Interval(TimeSpan.FromMilliseconds(1000))
+                Interval(TimeSpan.FromMilliseconds(500))
                 .Select(x => Convert.ToInt32(mediaPlayer.Time / 1000))
-                .Where(x => lastSetPosition == null || Math.Abs(lastSetPosition.Value - x) < 2)
+                .Where(x => lastSetPosition == null || Math.Abs(lastSetPosition.Value - x) < 3)
                 .Subscribe(x =>
                 {
                     lastSetPosition = null;
@@ -302,9 +302,9 @@ public sealed class PlaybackService : IPlaybackService
         }
 
         lastSetPosition = newPosition;
+        positionSubject.OnNext(newPosition);
         mediaPlayer.Time = newPosition * 1000;
 
-        positionSubject.OnNext(newPosition);
 
         return true;
     }
