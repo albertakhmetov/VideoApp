@@ -55,7 +55,6 @@ public partial class App : Application, IApp
             instance = new App(args);
         });
 
-        instance?.host?.StopAsync().Wait();
         instance?.host?.Dispose();
     }
 
@@ -128,7 +127,7 @@ public partial class App : Application, IApp
                 .Execute(arguments[0]);
         }
 
-        _ = host.RunAsync();
+        host.Services.GetRequiredService<AwakeService>().Start();
     }
 
     private void SetTitle(string? fileName)
