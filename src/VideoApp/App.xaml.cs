@@ -45,6 +45,15 @@ public partial class App : Application, IApp
     [STAThread]
     public static void Main(string[] args)
     {
+        var appDirectory = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
+        if (appDirectory == null)
+        {
+            return;
+        }
+
+        Environment.CurrentDirectory = appDirectory;
+
+
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
         Start(_ =>
@@ -111,6 +120,7 @@ public partial class App : Application, IApp
         host = CreateHost();
 
         mainWindow = host.Services.GetRequiredService<MainWindow>();
+        mainWindow.AppWindow.SetIcon(@"Assets\app.ico");
         mainWindow.Closed += OnMainWindowClosed;
         mainWindow.AppWindow.Show(true);
 

@@ -22,6 +22,7 @@
 		<Authors>Albert Akhmetov</Authors>
 		<Product>VideoApp</Product>
 		<Version>0.1.0</Version>
+		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 		<PackageIcon></PackageIcon>
 		<PackageIconUrl />
 	</PropertyGroup>
