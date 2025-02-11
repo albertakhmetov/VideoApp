@@ -53,8 +53,15 @@ public partial class App : Application, IApp
             SynchronizationContext.SetSynchronizationContext(context);
 
             instance = new App(args);
+            instance.UnhandledException += (_, _) => StopHost();
         });
 
+        StopHost();
+    }
+
+    private static void StopHost()
+    {
+        instance?.host?.StopAsync().Wait();
         instance?.host?.Dispose();
     }
 
@@ -127,7 +134,7 @@ public partial class App : Application, IApp
                 .Execute(arguments[0]);
         }
 
-        host.Services.GetRequiredService<AwakeService>().Start();
+        _ = host.RunAsync();
     }
 
     private void SetTitle(string? fileName)
@@ -165,7 +172,7 @@ public partial class App : Application, IApp
 
         builder.Services.AddSingleton<MainWindow>();
 
-        builder.Services.AddSingleton<AwakeService>();
+        builder.Services.AddHostedService<AwakeService>();
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();

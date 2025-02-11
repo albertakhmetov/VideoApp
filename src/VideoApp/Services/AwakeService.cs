@@ -28,7 +28,7 @@ using VideoApp.Core.Services;
 using Windows.Win32;
 using Windows.Win32.System.Power;
 
-class AwakeService : IDisposable
+class AwakeService : IDisposable, IHostedService
 {
     private IPlaybackService playbackService;
 
@@ -46,7 +46,7 @@ class AwakeService : IDisposable
         disposable.Dispose();
     }
 
-    public void Start()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         if (SynchronizationContext.Current == null)
         {
@@ -54,11 +54,11 @@ class AwakeService : IDisposable
         }
 
         playbackService
-             .State
-             .Where(x => x == Core.Models.PlaybackState.Playing)
-             .ObserveOn(SynchronizationContext.Current)
-             .Subscribe(_ => StartAwakeTimer())
-             .DisposeWith(disposable);
+           .State
+           .Where(x => x == Core.Models.PlaybackState.Playing)
+           .ObserveOn(SynchronizationContext.Current)
+           .Subscribe(_ => StartAwakeTimer())
+           .DisposeWith(disposable);
 
         playbackService
             .State
@@ -66,11 +66,15 @@ class AwakeService : IDisposable
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(_ => StopAwakeTimer())
             .DisposeWith(disposable);
+
+        return Task.CompletedTask;
     }
 
-    public void Stop()
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         StopAwakeTimer();
+
+        return Task.CompletedTask;
     }
 
     private void StartAwakeTimer()
