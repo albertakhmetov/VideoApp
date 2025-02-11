@@ -123,29 +123,30 @@
                             <FontIcon Margin="0,0,0,0" Glyph="&#xED1E;" />
                         </Button.Content>
 
+                        <Button.Resources>
+                            <Style x:Key="TrackMenuSeparator" TargetType="MenuFlyoutSeparator">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="MenuFlyoutSeparator">
+                                            <TextBlock
+                                                Text="{Binding}"
+                                                Margin="12,8,0,4"
+                                                Foreground="{ThemeResource TextOnAccentFillColorDisabledBrush}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Resources>
+
                         <Button.Flyout>
-                            <Flyout x:Name="TracksFlyout" Placement="Bottom">
-                                <StackPanel MinWidth="200" MaxWidth="300">
-                                    <TextBlock 
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                        Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.AudioTracks.Length), Mode=OneWay}"
-                                        Text="Audio"/>
-                                    <ListView 
-                                        ItemsSource="{x:Bind ViewModel.AudioTracks, Mode=OneWay}"
-                                        SelectedValue="{x:Bind ViewModel.AudioTrack, Mode=TwoWay}"
-                                        Margin="0,4,0,0"
-                                        DisplayMemberPath="Text"/>
-                                    <TextBlock 
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                        Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.SubtitleTracks.Length), Mode=OneWay}"
-                                        Text="Subtitle"/>
-                                    <ListView 
-                                        ItemsSource="{x:Bind ViewModel.SubtitleTracks, Mode=OneWay}"
-                                        SelectedValue="{x:Bind ViewModel.SubtitleTrack, Mode=TwoWay}"
-                                        Margin="0,4,0,0"
-                                        DisplayMemberPath="Text"/>
-                                </StackPanel>
-                            </Flyout>
+                            <MenuFlyout x:Name="TracksFlyout">
+                                <MenuFlyoutSeparator Style="{StaticResource TrackMenuSeparator}" DataContext="Audio"/>
+
+
+                                <MenuFlyoutSeparator Style="{StaticResource TrackMenuSeparator}" DataContext="Subtitle"/>
+
+                            </MenuFlyout>
                         </Button.Flyout>
                     </Button>
 

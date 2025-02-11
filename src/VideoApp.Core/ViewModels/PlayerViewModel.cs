@@ -20,6 +20,7 @@ namespace VideoApp.Core.ViewModels;
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -40,8 +41,7 @@ public class PlayerViewModel : ViewModel, IDisposable
     private PlaybackState state;
 
     private ImmutableArray<TrackInfo> audioTracks = [], subtitleTracks = [];
-    private TrackInfo? subtitleTrack;
-    private TrackInfo? audioTrack;
+    private int audioTrackId, subtitleTrackId;
 
     public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
     {
@@ -94,13 +94,13 @@ public class PlayerViewModel : ViewModel, IDisposable
         playbackService
             .AudioTrack
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => AudioTrack = AudioTracks.FirstOrDefault(i => i.Id == x))
+            .Subscribe(x => AudioTrackId = x)
             .DisposeWith(disposable);
 
         playbackService
             .SubtitleTrack
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => SubtitleTrack = SubtitleTracks.FirstOrDefault(i => i.Id == x))
+            .Subscribe(x => SubtitleTrackId = x)
             .DisposeWith(disposable);
 
         OpenMediaFileCommand = this.serviceProvider
@@ -170,26 +170,26 @@ public class PlayerViewModel : ViewModel, IDisposable
         private set => Set(ref subtitleTracks, value);
     }
 
-    public TrackInfo? AudioTrack
+    public int AudioTrackId
     {
-        get => audioTrack;
+        get => audioTrackId;
         set
         {
-            if (value != null && Set(ref audioTrack, value))
+            if (Set(ref audioTrackId, value))
             {
-                playbackService.SetAudioTrack(value.Id);
+                playbackService.SetAudioTrack(value);
             }
         }
     }
 
-    public TrackInfo? SubtitleTrack
+    public int SubtitleTrackId
     {
-        get => subtitleTrack;
+        get => subtitleTrackId;
         set
         {
-            if (value != null && Set(ref subtitleTrack, value))
+            if (Set(ref subtitleTrackId, value))
             {
-                playbackService.SetSubtitleTrack(value.Id);
+                playbackService.SetSubtitleTrack(value);
             }
         }
     }
