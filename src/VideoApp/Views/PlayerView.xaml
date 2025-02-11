@@ -97,7 +97,7 @@
             Initialized="VideoView_Initialized"/>
 
         <Grid 
-            Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed), Mode=OneWay}"
+            Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed, models:PlaybackState.Opening), Mode=OneWay}"
             Background="Black" />
 
         <Border 

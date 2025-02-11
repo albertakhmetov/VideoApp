@@ -97,6 +97,11 @@ internal static class Helpers
 
     public static Visibility VisibleIfNot(PlaybackState value, PlaybackState s1, PlaybackState s2) => VisibleIfNotCore(value, s1, s2);
 
+
+    public static Visibility VisibleIf(PlaybackState value, PlaybackState s1, PlaybackState s2, PlaybackState s3) => VisibleIfCore(value, s1, s2, s3);
+
+    public static Visibility VisibleIfNot(PlaybackState value, PlaybackState s1, PlaybackState s2, PlaybackState s3) => VisibleIfNotCore(value, s1, s2, s3);
+
     public static Visibility VisibleIfCore(PlaybackState value, params PlaybackState[] expected)
     {
         return expected.Contains(value) ? Visibility.Visible : Visibility.Collapsed;

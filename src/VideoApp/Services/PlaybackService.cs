@@ -193,6 +193,10 @@ public sealed class PlaybackService : IPlaybackService
 
         if (fileName != null && File.Exists(fileName))
         {
+            Stop();
+
+            stateSubject.OnNext(PlaybackState.Opening);
+
             using var media = new Media(libVCL, new Uri(fileName));
 
             var parseStatus = await media.Parse();

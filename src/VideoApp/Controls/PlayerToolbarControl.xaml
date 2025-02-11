@@ -28,6 +28,12 @@
                 <converters:TimeValueConverter x:Key="TimeValueConverter"/>
             </Grid.Resources>
 
+            <ProgressBar
+                Grid.Column="0"
+                Margin="5"
+                IsIndeterminate="True"
+                Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Opening), Mode=OneWay}"/>
+
             <Grid 
                 Grid.Column="0"
                 Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Playing, models:PlaybackState.Paused), Mode=OneWay}">
