@@ -43,7 +43,7 @@ public sealed class PlaybackService : IPlaybackService
     private readonly BehaviorSubject<ImmutableArray<TrackInfo>> audioTrackInfoSubject, subtitleTrackInfoSubject;
     private readonly BehaviorSubject<int> audioTrackSubject, subtitleTrackSubject;
 
-    private long? lastSetPosition;
+    private int? lastSetPosition;
 
     public PlaybackService()
     {
@@ -125,11 +125,10 @@ public sealed class PlaybackService : IPlaybackService
                 .Subscribe(x => durationSubject.OnNext(x))
                 .DisposeWith(disposable);
 
-            Observable
-                .Interval(TimeSpan.FromMilliseconds(500))
+            Observable.
+                Interval(TimeSpan.FromMilliseconds(1000))
                 .Select(x => Convert.ToInt32(mediaPlayer.Time / 1000))
-                .Where(x => lastSetPosition == null || lastSetPosition == x)
-                .Distinct()
+                .Where(x => lastSetPosition == null || Math.Abs(lastSetPosition.Value - x) < 2)
                 .Subscribe(x =>
                 {
                     lastSetPosition = null;
