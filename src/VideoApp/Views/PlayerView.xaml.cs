@@ -90,7 +90,9 @@ public sealed partial class PlayerView : UserControl
         ViewModel = serviceProvider.GetRequiredService<PlayerViewModel>();
         disposable = new CompositeDisposable();
 
-        var activity = Observable.FromEventPattern<PointerRoutedEventArgs>(this, nameof(Control.PointerMoved));
+        var activity = Observable.Merge(
+            Observable.FromEventPattern<PointerRoutedEventArgs>(this, nameof(Control.PointerMoved)).Select(_ => true),
+            Observable.FromEventPattern<DragEventArgs>(this, nameof(Control.DragOver)).Select(_ => true));
 
         activity
             .Subscribe(_ => ShowToolbar())
@@ -189,7 +191,7 @@ public sealed partial class PlayerView : UserControl
 
     private bool ProcessKey(KeyRoutedEventArgs e)
     {
-        if (e.OriginalSource is PlayerView == false && e.OriginalSource is VideoView== false)
+        if (e.OriginalSource is PlayerView == false && e.OriginalSource is VideoView == false)
         {
             return false;
         }
