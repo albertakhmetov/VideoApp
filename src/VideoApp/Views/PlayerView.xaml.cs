@@ -186,6 +186,11 @@ public sealed partial class PlayerView : UserControl
 
     protected override void OnPreviewKeyDown(KeyRoutedEventArgs e)
     {
+        if (e.Key == Windows.System.VirtualKey.Escape)
+        {
+            HideToolbar();
+        }
+
         e.Handled = ProcessKey(e);
 
         base.OnKeyDown(e);
@@ -193,7 +198,7 @@ public sealed partial class PlayerView : UserControl
 
     private bool ProcessKey(KeyRoutedEventArgs e)
     {
-        if (e.OriginalSource is Control control && control.FocusState == FocusState.Keyboard)
+        if (e.OriginalSource is VideoView == false && e.OriginalSource is Control control && control.FocusState == FocusState.Keyboard)
         {
             return false;
         }
