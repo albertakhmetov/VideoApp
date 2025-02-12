@@ -193,7 +193,7 @@ public sealed partial class PlayerView : UserControl
 
     private bool ProcessKey(KeyRoutedEventArgs e)
     {
-        if (e.OriginalSource is PlayerView == false && e.OriginalSource is VideoView == false)
+        if (e.OriginalSource is Control control && control.FocusState == FocusState.Keyboard)
         {
             return false;
         }
