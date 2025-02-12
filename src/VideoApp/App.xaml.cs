@@ -20,6 +20,7 @@ namespace VideoApp;
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -45,6 +46,11 @@ public partial class App : Application, IApp
     [STAThread]
     public static void Main(string[] args)
     {
+        if (!SingleInstanceService.IsFirstInstance(args))
+        {
+            return;
+        }
+
         var appDirectory = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
         if (appDirectory == null)
         {
@@ -67,6 +73,8 @@ public partial class App : Application, IApp
 
         StopHost();
     }
+
+
 
     private static void StopHost()
     {
@@ -144,6 +152,18 @@ public partial class App : Application, IApp
                 .Execute(arguments[0]);
         }
 
+        host.Services
+            .GetRequiredService<ISingleInstanceService>()
+            .Activated
+            .Where(x => !x.IsEmpty)
+            .Subscribe(x =>
+            {
+                host.Services
+                    .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand))
+                    .Execute(x);
+            })
+            .DisposeWith(disposable);
+
         _ = host.RunAsync();
     }
 
@@ -183,10 +203,12 @@ public partial class App : Application, IApp
         builder.Services.AddSingleton<MainWindow>();
 
         builder.Services.AddHostedService<AwakeService>();
+        builder.Services.AddHostedService<PipeService>();
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
+        builder.Services.AddSingleton<ISingleInstanceService, SingleInstanceService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();

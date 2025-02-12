@@ -37,7 +37,12 @@ public class OpenMediaFileCommand : CommandBase
 
     public override async void Execute(object? parameter)
     {
-        if (parameter is string filePath && File.Exists(filePath))
+        if (parameter is IList<string> list && list.Count > 0)
+        {
+            await playbackService.Load(list.First());
+
+        }
+        else if (parameter is string filePath && File.Exists(filePath))
         {
             await playbackService.Load(filePath);
         }
