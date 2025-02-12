@@ -78,6 +78,8 @@ public sealed partial class PlayerView : UserControl
     private void PlayerView_DragOver(object sender, DragEventArgs e)
     {
         e.AcceptedOperation = DataPackageOperation.Link;
+        e.DragUIOverride.Caption = "Play";
+        e.DragUIOverride.IsGlyphVisible = false;
     }
 
     private void PlayerView_Loaded(object sender, RoutedEventArgs e)
