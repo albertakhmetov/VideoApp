@@ -207,10 +207,12 @@ public partial class App : Application, IApp
 
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
+        builder.Services.AddSingleton<IMruListService, MruListService>();
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
         builder.Services.AddSingleton<ISingleInstanceService, SingleInstanceService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
+        builder.Services.AddTransient<MruListViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
         builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));

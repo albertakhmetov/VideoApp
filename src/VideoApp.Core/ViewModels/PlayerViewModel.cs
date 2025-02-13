@@ -120,6 +120,8 @@ public class PlayerViewModel : ViewModel, IDisposable
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
         PositionCommand = new RelayCommand(x => SetPosition(x));
         ExitCommand = new RelayCommand(_ => app.Exit());
+
+        MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
     }
 
     public int Duration
@@ -213,6 +215,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     public ICommand PositionCommand { get; }
 
     public ICommand ExitCommand { get; }
+
+    public MruListViewModel MruListViewModel { get; }
 
     public void Dispose()
     {

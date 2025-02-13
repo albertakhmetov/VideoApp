@@ -80,6 +80,19 @@
                             <FontIcon Margin="0,0,0,0" Glyph="&#xF847;" />
                         </Button.Content>
                     </Button>
+
+                    <Button 
+                        Style="{StaticResource PlaybackButton}"
+                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.MruListViewModel.Items.Length), Mode=OneWay}">
+                        <Button.Content>
+                            <FontIcon Margin="0,0,0,0" Glyph="&#xE81C;" />
+                        </Button.Content>
+
+                        <Button.Flyout>
+                            <MenuFlyout x:Name="MruFlyout">
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">

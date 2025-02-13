@@ -35,6 +35,8 @@ public sealed class PlaybackService : IPlaybackService
     private MediaPlayer? mediaPlayer;
     private CompositeDisposable? disposable;
 
+    private readonly IMruListService mruListService;
+
     private readonly BehaviorSubject<string?> mediaFileNameSubject;
     private readonly BehaviorSubject<PlaybackState> stateSubject;
     private readonly BehaviorSubject<int> durationSubject, positionSubject;
@@ -45,8 +47,10 @@ public sealed class PlaybackService : IPlaybackService
 
     private int? lastSetPosition;
 
-    public PlaybackService()
+    public PlaybackService(IMruListService mruService)
     {
+        this.mruListService = mruService.NotNull();
+
         Core.Initialize("./LibVLC");
 
         if (!File.Exists("./LibVLC/plugins/plugins.dat"))
@@ -240,6 +244,8 @@ public sealed class PlaybackService : IPlaybackService
             positionSubject.OnNext(0);
 
             await Task.Delay(500);
+
+            mruListService.Add(fileName);
 
             return mediaPlayer.Play(media) == true;
         }
