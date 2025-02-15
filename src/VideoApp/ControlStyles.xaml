@@ -400,6 +400,7 @@
                         <StackPanel>
                             <Border 
                                 x:Name="PART_BORDER"
+                                Padding="{TemplateBinding Padding}"
                                 BorderThickness="1"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}">

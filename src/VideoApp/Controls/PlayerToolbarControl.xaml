@@ -84,14 +84,23 @@
 
                     <Button 
                         Style="{StaticResource PlaybackButton}"
-                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.MruListViewModel.Items.Length), Mode=OneWay}">
+                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.MruListViewModel.Items.Count), Mode=OneWay}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xE81C;" />
                         </Button.Content>
 
                         <Button.Flyout>
-                            <MenuFlyout x:Name="MruFlyout">
-                            </MenuFlyout>
+                            <Flyout x:Name="MruFlyout">
+                                <ItemsRepeater Margin="-8" ItemsSource="{x:Bind ViewModel.MruListViewModel.Items}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
+                                                <TextBlock Text="{Binding Name}" Margin="8,4"/>
+                                            </local:AppItemContainer>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </Flyout>
                         </Button.Flyout>
                     </Button>
 
@@ -107,14 +116,14 @@
                                 <ItemsRepeater Margin="-8" ItemsSource="{x:Bind ViewModel.PlaylistViewModel.Items}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate>
-                                            <local:AppItemContainer Command="{Binding SelectCommand}">
-                                                <Grid Padding="2">
+                                            <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
+                                                <Grid>
                                                     <FontIcon
                                                         HorizontalAlignment="Left"
                                                         Margin="4,0"
                                                         Glyph="&#xEDB5;" 
                                                         Visibility="{Binding IsCurrent, Converter={StaticResource VisibilityConverter}}"/>
-                                                    <TextBlock Text="{Binding Name}" Margin="36,4,4,4"/>
+                                                    <TextBlock Text="{Binding Name}" Margin="36,4,8,4"/>
                                                 </Grid>
                                             </local:AppItemContainer>
                                         </DataTemplate>

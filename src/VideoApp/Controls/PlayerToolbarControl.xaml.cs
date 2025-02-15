@@ -41,21 +41,20 @@ public partial class PlayerToolbarControl : UserControl
             if (e.OldValue is PlayerViewModel oldViewModel)
             {
                 oldViewModel.PropertyChanged -= control.ViewModel_PropertyChanged;
-                oldViewModel.MruListViewModel.PropertyChanged -= control.MruViewModel_PropertyChanged;
+                oldViewModel.MruListViewModel.ItemSelected -= control.MruViewModel_ItemSelected;
                 oldViewModel.PlaylistViewModel.ItemSelected -= control.PlaylistViewModel_ItemSelected;
             }
 
             if (e.NewValue is PlayerViewModel viewModel)
             {
                 viewModel.PropertyChanged += control.ViewModel_PropertyChanged;
-                viewModel.MruListViewModel.PropertyChanged += control.MruViewModel_PropertyChanged;
+                viewModel.MruListViewModel.ItemSelected += control.MruViewModel_ItemSelected;
                 viewModel.PlaylistViewModel.ItemSelected += control.PlaylistViewModel_ItemSelected;
 
                 control.Bindings.Update();
 
                 control.RebuildTracksMenu(viewModel.AudioTracks, viewModel.AudioTrackId, 0);
                 control.RebuildTracksMenu(viewModel.SubtitleTracks, viewModel.SubtitleTrackId, 1);
-                control.RebuildMruListMenu(viewModel.MruListViewModel.Items);
             }
             else
             {
@@ -64,26 +63,15 @@ public partial class PlayerToolbarControl : UserControl
         }
     }
 
+    private void MruViewModel_ItemSelected(object? sender, EventArgs e)
+    {
+        MruFlyout.Hide();
+    }
+
     private void PlaylistViewModel_ItemSelected(object? sender, EventArgs e)
     {
         PlaylistFlyout.Hide();
     }
-
-    private void MruViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (ViewModel == null)
-        {
-            return;
-        }
-
-        switch (e.PropertyName)
-        {
-            case nameof(MruListViewModel.Items):
-                RebuildMruListMenu(ViewModel.MruListViewModel.Items);
-                break;
-        }
-    }
-
 
     private static readonly string[] TrackGroups = { "Audio", "Subtitle" };
 
@@ -111,44 +99,6 @@ public partial class PlayerToolbarControl : UserControl
             case nameof(PlayerViewModel.SubtitleTrackId):
                 UpdateMenuSelection(ViewModel.SubtitleTrackId, 1);
                 break;
-        }
-    }
-
-    private void RebuildMruListMenu(ImmutableArray<FileItem> items)
-    {
-        while (MruFlyout.Items.Count < items.Length)
-        {
-            var menuItem = new MenuFlyoutItem();
-            menuItem.Click += MenuItem_Click;
-
-            MruFlyout.Items.Add(menuItem);
-        }
-
-        while (MruFlyout.Items.Count > items.Length)
-        {
-            if (MruFlyout.Items[0] is MenuFlyoutItem menuItem)
-            {
-                menuItem.Click -= MenuItem_Click;
-            }
-
-            MruFlyout.Items.RemoveAt(0);
-        }
-
-        for (var i = 0; i < items.Length; i++)
-        {
-            MruFlyout.Items[i].DataContext = items[i];
-            if (MruFlyout.Items[i] is MenuFlyoutItem menuItem)
-            {
-                menuItem.Text = items[i].Name;
-            }
-        }
-    }
-
-    private void MenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuFlyoutItem menuItem && menuItem.DataContext is string fileName)
-        {
-            ViewModel?.OpenMediaFileCommand.Execute(fileName);
         }
     }
 
