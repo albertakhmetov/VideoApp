@@ -28,18 +28,18 @@ using VideoApp.Core.Services;
 
 class MruListService : IMruListService
 {
-    private readonly BehaviorSubject<ImmutableArray<MruListItem>> itemsSubject;
+    private readonly BehaviorSubject<ImmutableArray<FileItem>> itemsSubject;
 
     public MruListService()
     {
-        itemsSubject = new BehaviorSubject<ImmutableArray<MruListItem>>([.. LoadItems()]);
+        itemsSubject = new BehaviorSubject<ImmutableArray<FileItem>>([.. LoadItems()]);
 
         Items = itemsSubject.AsObservable();
     }
 
     public int MaxCount { get; } = 10;
 
-    public IObservable<ImmutableArray<MruListItem>> Items { get; }
+    public IObservable<ImmutableArray<FileItem>> Items { get; }
 
     public void Add(string fileName)
     {
@@ -51,7 +51,7 @@ class MruListService : IMruListService
             items.Remove(item);
         }
 
-        items.Insert(0, new MruListItem(fileName));
+        items.Insert(0, new FileItem(fileName));
 
         itemsSubject.OnNext([.. items.Take(MaxCount)]);
 
@@ -73,9 +73,9 @@ class MruListService : IMruListService
         SaveItems();
     }
 
-    private IEnumerable<MruListItem> LoadItems()
+    private IEnumerable<FileItem> LoadItems()
     {
-        var r = new List<MruListItem>();
+        var r = new List<FileItem>();
 
         try
         {
@@ -86,7 +86,7 @@ class MruListService : IMruListService
             {
                 if (!string.IsNullOrEmpty(line) && File.Exists(line))
                 {
-                    r.Add(new MruListItem(line));
+                    r.Add(new FileItem(line));
                 }
             }
         }

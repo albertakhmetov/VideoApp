@@ -66,12 +66,7 @@ public sealed partial class PlayerView : UserControl
         {
             var items = await e.DataView.GetStorageItemsAsync();
 
-            var file = items.FirstOrDefault() as StorageFile;
-
-            if (file != null)
-            {
-                ViewModel?.OpenMediaFileCommand.Execute(file.Path);
-            }
+            ViewModel?.OpenMediaFileCommand.Execute(items.Where(x => x is StorageFile).Select(x => ((StorageFile)x).Path));
         }
     }
 

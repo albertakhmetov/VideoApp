@@ -26,6 +26,7 @@
 
             <Grid.Resources>
                 <converters:TimeValueConverter x:Key="TimeValueConverter"/>
+                <converters:VisibilityConverter x:Key="VisibilityConverter"/>
             </Grid.Resources>
 
             <ProgressBar
@@ -91,6 +92,35 @@
                         <Button.Flyout>
                             <MenuFlyout x:Name="MruFlyout">
                             </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <Button
+                        Style="{StaticResource PlaybackButton}"
+                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.PlaylistViewModel.Items.Count), Mode=OneWay}">
+                        <Button.Content>
+                            <FontIcon Margin="0,0,0,0" Glyph="&#xE90B;" />
+                        </Button.Content>
+
+                        <Button.Flyout>
+                            <Flyout x:Name="PlaylistFlyout">
+                                <ItemsRepeater Margin="-8" ItemsSource="{x:Bind ViewModel.PlaylistViewModel.Items}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:AppItemContainer Command="{Binding SelectCommand}">
+                                                <Grid Padding="2">
+                                                    <FontIcon
+                                                        HorizontalAlignment="Left"
+                                                        Margin="4,0"
+                                                        Glyph="&#xEDB5;" 
+                                                        Visibility="{Binding IsCurrent, Converter={StaticResource VisibilityConverter}}"/>
+                                                    <TextBlock Text="{Binding Name}" Margin="36,4,4,4"/>
+                                                </Grid>
+                                            </local:AppItemContainer>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </Flyout>
                         </Button.Flyout>
                     </Button>
                 </StackPanel>

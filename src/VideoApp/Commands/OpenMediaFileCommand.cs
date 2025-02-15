@@ -20,6 +20,7 @@ namespace VideoApp.Commands;
 
 using VideoApp.Core;
 using VideoApp.Core.Commands;
+using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 using VideoApp.Services;
 using Windows.Storage.Pickers;
@@ -27,19 +28,24 @@ using Windows.Storage.Pickers;
 public class OpenMediaFileCommand : CommandBase
 {
     private readonly IApp app;
+    private readonly IPlaylistService playlistService;
     private readonly IPlaybackService playbackService;
 
-    public OpenMediaFileCommand(IApp app, IPlaybackService playbackService)
+    public OpenMediaFileCommand(IApp app, IPlaylistService playlistService, IPlaybackService playbackService)
     {
         this.app = app.NotNull();
+        this.playlistService = playlistService.NotNull();
         this.playbackService = playbackService.NotNull();
     }
 
     public override async void Execute(object? parameter)
     {
-        if (parameter is IList<string> list && list.Count > 0)
+        if (parameter is IEnumerable<string> list && list.Any())
         {
-            await playbackService.Load(list.First());
+            var playlist = new PlaylistItems(0, [.. list.Select(x => new FileItem(x))]);
+            playlistService.SetItems(playlist);
+
+            await playbackService.Load(playlist.Items.First().FullPath);
 
         }
         else if (parameter is string filePath && File.Exists(filePath))
@@ -57,10 +63,13 @@ public class OpenMediaFileCommand : CommandBase
             openPicker.FileTypeFilter.Add(".avi");
             openPicker.FileTypeFilter.Add(".mp4");
 
-            var file = await openPicker.PickSingleFileAsync();
-            if (file != null)
+            var files = await openPicker.PickMultipleFilesAsync();
+            if (files != null && files.Any())
             {
-                playbackService.Load(file.Path);
+                var playlist = new PlaylistItems(0, [.. files.Select(x => new FileItem(x.Path))]);
+                playlistService.SetItems(playlist);
+
+                await playbackService.Load(playlist.Items.First().FullPath);
             }
         }
     }

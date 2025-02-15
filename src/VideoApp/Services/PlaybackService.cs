@@ -37,6 +37,7 @@ public sealed class PlaybackService : IPlaybackService
 
     private readonly IMruListService mruListService;
 
+    private readonly BehaviorSubject<FileItem?> mediaFileSubject;
     private readonly BehaviorSubject<string?> mediaFileNameSubject;
     private readonly BehaviorSubject<PlaybackState> stateSubject;
     private readonly BehaviorSubject<int> durationSubject, positionSubject;
@@ -58,6 +59,7 @@ public sealed class PlaybackService : IPlaybackService
             new LibVLC("--reset-plugins-cache");
         }
 
+        mediaFileSubject = new BehaviorSubject<FileItem?>(null);
         mediaFileNameSubject = new BehaviorSubject<string?>(null);
         stateSubject = new BehaviorSubject<PlaybackState>(PlaybackState.NotInitialized);
         durationSubject = new BehaviorSubject<int>(0);
@@ -70,6 +72,7 @@ public sealed class PlaybackService : IPlaybackService
         audioTrackSubject = new BehaviorSubject<int>(-1);
         subtitleTrackSubject = new BehaviorSubject<int>(-1);
 
+        MediaFile = mediaFileSubject.AsObservable();
         MediaFileName = mediaFileNameSubject.AsObservable();
         State = stateSubject.AsObservable();
         Duration = durationSubject.AsObservable();
@@ -82,6 +85,8 @@ public sealed class PlaybackService : IPlaybackService
     }
 
     public bool IsInitialized => libVCL != null;
+
+    public IObservable<FileItem?> MediaFile { get; }
 
     public IObservable<string?> MediaFileName { get; }
 
@@ -245,6 +250,7 @@ public sealed class PlaybackService : IPlaybackService
 
             await Task.Delay(500);
 
+            mediaFileSubject.OnNext(new FileItem(fileName));
             mruListService.Add(fileName);
 
             return mediaPlayer.Play(media) == true;

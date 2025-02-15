@@ -183,7 +183,7 @@
                                                 KeyTime="0" 
                                                 Value="{ThemeResource SystemControlTransparentBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        
+
                                         <ObjectAnimationUsingKeyFrames 
                                             Storyboard.TargetName="PART_DECREASE" 
                                             Storyboard.TargetProperty="Fill">
@@ -242,7 +242,7 @@
                                             <DiscreteObjectKeyFrame
                                                 KeyTime="0" 
                                                 Value="{ThemeResource ControlStrongFillColorDisabledBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>   
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames
                                             Storyboard.TargetName="PART_THUMB" 
                                             Storyboard.TargetProperty="Background">
@@ -341,6 +341,73 @@
                             </Grid>
                         </Grid>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:AppItemContainer">
+        <Setter Property="Background" Value="{ThemeResource ItemContainerBackground}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:AppItemContainer">
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="Common">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames
+                                            Storyboard.TargetName="PART_BORDER" 
+                                            Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0"
+                                                Value="{ThemeResource ItemContainerPointerOverBackground}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetName="PART_BORDER" 
+                                            Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ItemContainerPointerOverBorderBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetName="PART_BORDER" 
+                                            Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ItemContainerPressedBackground}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames 
+                                            Storyboard.TargetName="PART_BORDER" 
+                                            Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource ItemContainerPressedBorderBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <StackPanel>
+                            <Border 
+                                x:Name="PART_BORDER"
+                                BorderThickness="1"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentPresenter/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

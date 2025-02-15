@@ -74,8 +74,6 @@ public partial class App : Application, IApp
         StopHost();
     }
 
-
-
     private static void StopHost()
     {
         instance?.host?.StopAsync().Wait();
@@ -149,7 +147,7 @@ public partial class App : Application, IApp
         {
             host.Services
                 .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand))
-                .Execute(arguments[0]);
+                .Execute(arguments);
         }
 
         host.Services
@@ -208,11 +206,13 @@ public partial class App : Application, IApp
         builder.Services.AddSingleton<IApp>(this);
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
         builder.Services.AddSingleton<IMruListService, MruListService>();
+        builder.Services.AddSingleton<IPlaylistService, PlaylistService>();
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
         builder.Services.AddSingleton<ISingleInstanceService, SingleInstanceService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
         builder.Services.AddTransient<MruListViewModel>();
+        builder.Services.AddTransient<PlaylistViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
         builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));

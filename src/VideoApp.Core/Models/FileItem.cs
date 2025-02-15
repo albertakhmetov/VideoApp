@@ -16,18 +16,30 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Services;
+namespace VideoApp.Core.Models;
 
-using System.Collections.Immutable;
-using VideoApp.Core.Models;
-
-public interface IMruListService
+public sealed class FileItem : IEquatable<FileItem>, IEquatable<string>
 {
-    int MaxCount { get; }
+    public FileItem(string fileName)
+    {
+        FullPath = fileName;
+        Directory = Path.GetDirectoryName(fileName) ?? string.Empty;
+        Name = Path.GetFileNameWithoutExtension(fileName) ?? string.Empty;
+    }
 
-    IObservable<ImmutableArray<FileItem>> Items { get; }
+    public string FullPath { get; }
 
-    void Add(string fileName);
+    public string Directory { get; }
 
-    void Remove(string fileName);
+    public string Name { get; }
+
+    public bool Equals(FileItem? other)
+    {
+        return other != null && FullPath.Equals(other.FullPath, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    public bool Equals(string? other)
+    {
+        return FullPath.Equals(other, StringComparison.InvariantCultureIgnoreCase);
+    }
 }

@@ -42,12 +42,15 @@ public partial class PlayerToolbarControl : UserControl
             {
                 oldViewModel.PropertyChanged -= control.ViewModel_PropertyChanged;
                 oldViewModel.MruListViewModel.PropertyChanged -= control.MruViewModel_PropertyChanged;
+                oldViewModel.PlaylistViewModel.ItemSelected -= control.PlaylistViewModel_ItemSelected;
             }
 
             if (e.NewValue is PlayerViewModel viewModel)
             {
                 viewModel.PropertyChanged += control.ViewModel_PropertyChanged;
                 viewModel.MruListViewModel.PropertyChanged += control.MruViewModel_PropertyChanged;
+                viewModel.PlaylistViewModel.ItemSelected += control.PlaylistViewModel_ItemSelected;
+
                 control.Bindings.Update();
 
                 control.RebuildTracksMenu(viewModel.AudioTracks, viewModel.AudioTrackId, 0);
@@ -58,8 +61,12 @@ public partial class PlayerToolbarControl : UserControl
             {
                 control.Bindings.StopTracking();
             }
-
         }
+    }
+
+    private void PlaylistViewModel_ItemSelected(object? sender, EventArgs e)
+    {
+        PlaylistFlyout.Hide();
     }
 
     private void MruViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -107,7 +114,7 @@ public partial class PlayerToolbarControl : UserControl
         }
     }
 
-    private void RebuildMruListMenu(ImmutableArray<MruListItem> items)
+    private void RebuildMruListMenu(ImmutableArray<FileItem> items)
     {
         while (MruFlyout.Items.Count < items.Length)
         {
@@ -236,5 +243,5 @@ public partial class PlayerToolbarControl : UserControl
 
     public bool ContainsPointer { get; private set; }
 
-    public bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen || MruFlyout.IsOpen;
+    public bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen || MruFlyout.IsOpen || PlaylistFlyout.IsOpen;
 }

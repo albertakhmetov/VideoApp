@@ -57,8 +57,8 @@
 
 	<ItemGroup>
 		<None Remove="ControlStyles.xaml" />
+		<None Remove="Controls\PlayerToolbarControl.xaml" />
 		<None Remove="CustomStyle.xaml" />
-		<None Remove="Views\PlayerControlView.xaml" />
 		<None Remove="Views\PlayerView.xaml" />
 		<None Remove="Views\SettingsView.xaml" />
 	</ItemGroup>
@@ -88,15 +88,16 @@
 		<None Update="App.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
+		<Page Update="Controls\PlayerToolbarControl.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>		
 		<Page Update="ControlStyles.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Views\SettingsView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
-		<Page Update="Views\PlayerControlView.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</Page>
+
 		<Page Update="CustomStyle.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

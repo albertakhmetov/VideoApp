@@ -32,7 +32,7 @@ public class MruListViewModel : ViewModel, IDisposable
     private CompositeDisposable disposable = new CompositeDisposable();
 
     private readonly IMruListService mruService;
-    private ImmutableArray<MruListItem> items= ImmutableArray<MruListItem>.Empty;
+    private ImmutableArray<FileItem> items= ImmutableArray<FileItem>.Empty;
 
     public MruListViewModel(IMruListService mruService)
     {
@@ -49,7 +49,7 @@ public class MruListViewModel : ViewModel, IDisposable
             .DisposeWith(disposable);
     }
 
-    public ImmutableArray<MruListItem> Items
+    public ImmutableArray<FileItem> Items
     {
         get => items;
         private set => Set(ref items, value);

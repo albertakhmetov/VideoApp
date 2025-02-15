@@ -21,13 +21,13 @@ namespace VideoApp.Core.Services;
 using System.Collections.Immutable;
 using VideoApp.Core.Models;
 
-public interface IMruListService
+public interface IPlaylistService : IDisposable
 {
-    int MaxCount { get; }
+    IObservable<PlaylistItems> Items { get; }
 
-    IObservable<ImmutableArray<FileItem>> Items { get; }
+    IObservable<FileItem?> CurrentItem { get; }
 
-    void Add(string fileName);
+    void SetItems(PlaylistItems items);
 
-    void Remove(string fileName);
+    void SetCurrentItem(FileItem item);
 }

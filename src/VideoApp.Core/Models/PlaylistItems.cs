@@ -16,18 +16,21 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Services;
+namespace VideoApp.Core.Models;
 
 using System.Collections.Immutable;
-using VideoApp.Core.Models;
 
-public interface IMruListService
+public sealed class PlaylistItems
 {
-    int MaxCount { get; }
+    public static readonly PlaylistItems Empty = new PlaylistItems(0, []);
 
-    IObservable<ImmutableArray<FileItem>> Items { get; }
+    public PlaylistItems(long version, params FileItem[] items)
+    {
+        Version = version;
+        Items = ImmutableArray.Create(items);
+    }
 
-    void Add(string fileName);
+    public long Version { get; }
 
-    void Remove(string fileName);
+    public ImmutableArray<FileItem> Items { get; }
 }

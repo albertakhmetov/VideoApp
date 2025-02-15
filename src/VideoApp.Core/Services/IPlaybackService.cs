@@ -26,6 +26,8 @@ public interface IPlaybackService : IDisposable
 {
     bool IsInitialized { get; }
 
+    IObservable<FileItem?> MediaFile { get; }
+
     IObservable<string?> MediaFileName { get; }
 
     IObservable<int> Duration { get; }

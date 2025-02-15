@@ -16,25 +16,21 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Models;
+namespace VideoApp.Core;
 
-public sealed class MruListItem : IEquatable<MruListItem>
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+
+public class AppObservableCollection<T> : ObservableCollection<T>
 {
-    public MruListItem(string fileName)
+    public void Set(IEnumerable<T>? items)
     {
-        FullPath = fileName;
-        Directory = Path.GetDirectoryName(fileName) ?? string.Empty;
-        Name = Path.GetFileNameWithoutExtension(fileName) ?? string.Empty;
-    }
+        Items.Clear();
+        foreach (var i in items ?? [])
+        {
+            Items.Add(i);
+        }
 
-    public string FullPath { get; }
-
-    public string Directory { get; }
-
-    public string Name { get; }
-
-    public bool Equals(MruListItem? other)
-    {
-        return other != null && FullPath.Equals(other.FullPath, StringComparison.InvariantCultureIgnoreCase);
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 }

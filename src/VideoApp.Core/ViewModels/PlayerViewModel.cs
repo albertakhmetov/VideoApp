@@ -122,6 +122,7 @@ public class PlayerViewModel : ViewModel, IDisposable
         ExitCommand = new RelayCommand(_ => app.Exit());
 
         MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
+        PlaylistViewModel = serviceProvider.GetRequiredService<PlaylistViewModel>();
     }
 
     public int Duration
@@ -217,6 +218,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     public ICommand ExitCommand { get; }
 
     public MruListViewModel MruListViewModel { get; }
+
+    public PlaylistViewModel PlaylistViewModel { get; }
 
     public void Dispose()
     {

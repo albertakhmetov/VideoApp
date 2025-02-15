@@ -16,18 +16,32 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Core.Services;
+namespace VideoApp.Converters;
 
-using System.Collections.Immutable;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
 using VideoApp.Core.Models;
 
-public interface IMruListService
+public class VisibilityConverter : IValueConverter
 {
-    int MaxCount { get; }
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value == null)
+        {
+            return Visibility.Collapsed;
+        }
+        else if (value is bool b)
+        {
+            return b == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else
+        {
+            return value;
+        }
+    }
 
-    IObservable<ImmutableArray<FileItem>> Items { get; }
-
-    void Add(string fileName);
-
-    void Remove(string fileName);
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
+    }
 }
