@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 [TemplatePart(Name = "PART_BORDER", Type = typeof(Border))]
+[TemplatePart(Name = "PART_SELECTED", Type = typeof(Border))]
 public class AppItemContainer : ContentControl
 {
     public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(
@@ -37,6 +38,12 @@ public class AppItemContainer : ContentControl
         typeof(object),
         typeof(AppItemContainer),
         new PropertyMetadata(null, null));
+
+    public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
+        nameof(IsSelected),
+        typeof(bool),
+        typeof(AppItemContainer),
+        new PropertyMetadata(false, null));
 
     public AppItemContainer()
     {
@@ -53,6 +60,12 @@ public class AppItemContainer : ContentControl
     {
         get => GetValue(CommandParameterProperty);
         set => SetValue(CommandParameterProperty, value);
+    }
+
+    public bool IsSelected
+    {
+        get => (bool)GetValue(IsSelectedProperty);
+        set => SetValue(IsSelectedProperty, value);
     }
 
     protected override void OnPointerEntered(PointerRoutedEventArgs e)

@@ -116,15 +116,11 @@
                                 <ItemsRepeater Margin="-8" ItemsSource="{x:Bind ViewModel.PlaylistViewModel.Items}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate>
-                                            <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
-                                                <Grid>
-                                                    <FontIcon
-                                                        HorizontalAlignment="Left"
-                                                        Margin="4,0"
-                                                        Glyph="&#xEDB5;" 
-                                                        Visibility="{Binding IsCurrent, Converter={StaticResource VisibilityConverter}}"/>
-                                                    <TextBlock Text="{Binding Name}" Margin="36,4,8,4"/>
-                                                </Grid>
+                                            <local:AppItemContainer 
+                                                IsSelected="{Binding IsCurrent, Mode=OneWay}"
+                                                Command="{Binding SelectCommand}" 
+                                                Padding="2">
+                                                  <TextBlock Text="{Binding Name}" Margin="4,4"/>
                                             </local:AppItemContainer>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
@@ -193,19 +189,11 @@
                                     <ItemsRepeater Margin="4" ItemsSource="{x:Bind ViewModel.TracksViewModel.AudioTracks}">
                                         <ItemsRepeater.ItemTemplate>
                                             <DataTemplate>
-                                                <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
-                                                    <Grid>
-                                                        <Rectangle
-                                                            Visibility="{Binding IsSelected, Converter={StaticResource VisibilityConverter}}"
-                                                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
-                                                            Width="4"
-                                                            Margin="0,4"
-                                                            HorizontalAlignment="Left"
-                                                            VerticalAlignment="Stretch"
-                                                            RadiusX="2"
-                                                            RadiusY="2"/>
-                                                        <TextBlock Text="{Binding Text}" Margin="16,4,8,4"/>
-                                                    </Grid>
+                                                <local:AppItemContainer 
+                                                    IsSelected="{Binding IsSelected, Mode=OneWay}"
+                                                    Command="{Binding SelectCommand}" 
+                                                    Padding="2">
+                                                    <TextBlock Text="{Binding Text}" Margin="4,4,8,4"/>
                                                 </local:AppItemContainer>
                                             </DataTemplate>
                                         </ItemsRepeater.ItemTemplate>
@@ -221,19 +209,11 @@
                                     <ItemsRepeater Margin="4" ItemsSource="{x:Bind ViewModel.TracksViewModel.SubtitleTracks}">
                                         <ItemsRepeater.ItemTemplate>
                                             <DataTemplate>
-                                                <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
-                                                    <Grid>
-                                                        <Rectangle
-                                                            Visibility="{Binding IsSelected, Converter={StaticResource VisibilityConverter}}"
-                                                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
-                                                            Width="4"
-                                                            Margin="0,4"
-                                                            HorizontalAlignment="Left"
-                                                            VerticalAlignment="Stretch"
-                                                            RadiusX="2"
-                                                            RadiusY="2"/>
-                                                        <TextBlock Text="{Binding Text}" Margin="16,4,8,4"/>
-                                                    </Grid>
+                                                <local:AppItemContainer 
+                                                    IsSelected="{Binding IsSelected, Mode=OneWay}"
+                                                    Command="{Binding SelectCommand}" 
+                                                    Padding="2">
+                                                    <TextBlock Text="{Binding Text}" Margin="4,4,8,4"/>
                                                 </local:AppItemContainer>
                                             </DataTemplate>
                                         </ItemsRepeater.ItemTemplate>
