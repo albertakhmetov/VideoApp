@@ -16,27 +16,23 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Controls;
+namespace VideoApp.Views;
 
-using System;
-using System.Collections.Immutable;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using VideoApp.Core;
-using VideoApp.Core.Models;
 using VideoApp.Core.ViewModels;
 
-public partial class PlayerToolbarControl : UserControl
+public sealed partial class ControlView : UserControl
 {
     public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
         nameof(ViewModel),
         typeof(PlayerViewModel),
-        typeof(PlayerToolbarControl),
+        typeof(ControlView),
         new PropertyMetadata(null, OnViewModelChanged));
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is PlayerToolbarControl control)
+        if (d is ControlView control)
         {
             if (e.OldValue is PlayerViewModel oldViewModel)
             {
@@ -51,14 +47,42 @@ public partial class PlayerToolbarControl : UserControl
                 viewModel.PlaylistViewModel.ItemSelected += control.PlaylistViewModel_ItemSelected;
                 viewModel.TracksViewModel.ItemSelected += control.TracksViewModel_ItemSelected;
 
-                control.Bindings.Update();
+                control.Bindings?.Update();
             }
             else
             {
-                control.Bindings.StopTracking();
+                control.Bindings?.StopTracking();
             }
         }
     }
+
+    private bool containsPointer;
+
+    public ControlView()
+    {
+        InitializeComponent();
+
+        PointerEntered += (_, _) => containsPointer = true;
+        PointerExited += (_, _) => containsPointer = false;
+
+        Tapped += (_, e) => e.Handled = true;
+        DoubleTapped += (_, e) => e.Handled = true;
+
+        Unloaded += OnUnloaded;
+    }
+
+    public PlayerViewModel? ViewModel
+    {
+        get => (PlayerViewModel)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
+
+    public bool IsActive => containsPointer
+        || TracksFlyout.IsOpen 
+        || VolumeFlyout.IsOpen 
+        || MenuFlyout.IsOpen 
+        || MruFlyout.IsOpen 
+        || PlaylistFlyout.IsOpen;
 
     private void TracksViewModel_ItemSelected(object? sender, EventArgs e)
     {
@@ -75,24 +99,8 @@ public partial class PlayerToolbarControl : UserControl
         PlaylistFlyout.Hide();
     }
 
-     public PlayerToolbarControl()
+    private void OnUnloaded(object sender, RoutedEventArgs e)
     {
-        this.InitializeComponent();
-
-        PointerEntered += (_, _) => ContainsPointer = true;
-        PointerExited += (_, _) => ContainsPointer = false;
-
-        Tapped += (_, e) => e.Handled = true;
-        DoubleTapped += (_, e) => e.Handled = true;
+        Bindings?.StopTracking();
     }
-
-    public PlayerViewModel? ViewModel
-    {
-        get => (PlayerViewModel)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
-    }
-
-    public bool ContainsPointer { get; private set; }
-
-    public bool IsFlyoutOpen => TracksFlyout.IsOpen || VolumeFlyout.IsOpen || MenuFlyout.IsOpen || MruFlyout.IsOpen || PlaylistFlyout.IsOpen;
 }

@@ -98,7 +98,7 @@ public sealed partial class PlayerView : UserControl
         activity
             .Throttle(TimeSpan.FromSeconds(1.2))
             .ObserveOn(SynchronizationContext.Current)
-            .Where(_ => ViewModel.State == PlaybackState.Playing && !Toolbar.ContainsPointer && !Toolbar.IsFlyoutOpen)
+            .Where(_ => ViewModel.State == PlaybackState.Playing && !ControlLayer.IsActive)
             .Subscribe(_ => HideToolbar())
             .DisposeWith(disposable);
 
@@ -108,7 +108,7 @@ public sealed partial class PlayerView : UserControl
 
     private void ShowToolbar()
     {
-        if (VisualStateManager.GoToState(this, "ToolbarVisible", true))
+        if (VisualStateManager.GoToState(ControlLayer, "Visible", true))
         {
             ProtectedCursor = null;
         }
@@ -116,9 +116,9 @@ public sealed partial class PlayerView : UserControl
 
     private void HideToolbar()
     {
-        if (VisualStateManager.GoToState(this, "ToolbarHidden", true))
+        if (VisualStateManager.GoToState(ControlLayer, "Hidden", true))
         {
-            Toolbar.Focus(FocusState.Programmatic);
+            ControlLayer.Focus(FocusState.Programmatic);
 
             if (ProtectedCursor == null)
             {
@@ -258,7 +258,7 @@ public sealed partial class PlayerView : UserControl
             .ObserveOn(SynchronizationContext.Current!)
             .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
 
-        ViewModel.TogglePlaybackCommand.Execute(null);
+        ViewModel.PlaybackViewModel.TogglePlaybackCommand.Execute(null);
         VisualStateManager.GoToState(this, "PlaybackStateNotification", true);
     }
 
@@ -278,12 +278,12 @@ public sealed partial class PlayerView : UserControl
 
         if (direction < 0)
         {
-            ViewModel?.SkipBackCommand.Execute(null);
+            ViewModel?.PlaybackViewModel?.SkipBackCommand.Execute(null);
             VisualStateManager.GoToState(this, "RewindNotification", true);
         }
         else
         {
-            ViewModel?.SkipForwardCommand.Execute(null);
+            ViewModel?.PlaybackViewModel?.SkipForwardCommand.Execute(null);
             VisualStateManager.GoToState(this, "ForwardNotification", true);
         }
 

@@ -5,6 +5,7 @@
     xmlns:converters="using:VideoApp.Converters"
     xmlns:controls="using:VideoApp.Controls">
 
+    <converters:TimeValueConverter x:Key="TimeValueConverter"/>
     <converters:VisibilityConverter x:Key="VisibilityConverter"/>
 
     <Style TargetType="Thumb" x:Key="AppSliderThumbStyle">

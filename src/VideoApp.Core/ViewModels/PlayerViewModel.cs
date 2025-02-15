@@ -80,16 +80,13 @@ public class PlayerViewModel : ViewModel, IDisposable
         OpenMediaFileCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
-        TogglePlaybackCommand = this.serviceProvider
-            .GetRequiredKeyedService<CommandBase>(nameof(TogglePlaybackCommand));
+
 
         SettingsCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(SettingsCommand));
 
         ToggleFullScreenCommand = new RelayCommand(x => this.app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
 
-        SkipBackCommand = new RelayCommand(_ => SkipBack());
-        SkipForwardCommand = new RelayCommand(_ => SkipForward());
         AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
         PositionCommand = new RelayCommand(x => SetPosition(x));
         ExitCommand = new RelayCommand(_ => app.Exit());
@@ -97,6 +94,7 @@ public class PlayerViewModel : ViewModel, IDisposable
         MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
         PlaylistViewModel = serviceProvider.GetRequiredService<PlaylistViewModel>();
         TracksViewModel = serviceProvider.GetRequiredService<TracksViewModel>();
+        PlaybackViewModel = serviceProvider.GetRequiredService<PlaybackViewModel>();
     }
 
     public int Duration
@@ -141,13 +139,9 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public ICommand SettingsCommand { get; }
 
-    public ICommand TogglePlaybackCommand { get; }
-
     public ICommand ToggleFullScreenCommand { get; }
 
-    public ICommand SkipBackCommand { get; }
 
-    public ICommand SkipForwardCommand { get; }
 
     public ICommand AdjustVolumeCommand { get; }
 
@@ -160,6 +154,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     public PlaylistViewModel PlaylistViewModel { get; }
 
     public TracksViewModel TracksViewModel { get; }
+
+    public PlaybackViewModel PlaybackViewModel { get; }
 
     public void Dispose()
     {
@@ -182,15 +178,7 @@ public class PlayerViewModel : ViewModel, IDisposable
         Set(ref volume, await playbackService.Volume.FirstOrDefaultAsync(), nameof(Volume));
     }
 
-    private void SkipBack()
-    {
-        playbackService.SkipBack(TimeSpan.FromSeconds(10));
-    }
 
-    private void SkipForward()
-    {
-        playbackService.SkipForward(TimeSpan.FromSeconds(10));
-    }
 
     private void SetPosition(object? x)
     {

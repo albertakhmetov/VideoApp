@@ -70,6 +70,8 @@ public class TracksViewModel : ViewModel
             .DisposeWith(disposable);
     }
 
+    public bool HasTracks => AudioTracks.Count + SubtitleTracks.Count > 0;
+
     public AppObservableCollection<Item> AudioTracks { get; }
 
     public AppObservableCollection<Item> SubtitleTracks { get; }
@@ -85,7 +87,6 @@ public class TracksViewModel : ViewModel
             }
         }
     }
-
 
     public int SubtitleTrackId
     {
@@ -127,12 +128,14 @@ public class TracksViewModel : ViewModel
     {
         AudioTracks.Set(items.Select(x => new Item(this, x)));
         UpdateAudioState();
+        OnPropertyChanged(nameof(HasTracks));
     }
 
     private void SetSubtitleTracks(ImmutableArray<TrackInfo> items)
     {
         SubtitleTracks.Set(items.Select(x => new Item(this, x)));
         UpdateSubtitleState();
+        OnPropertyChanged(nameof(HasTracks));
     }
 
     private void UpdateAudioState()

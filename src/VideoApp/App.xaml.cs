@@ -211,6 +211,7 @@ public partial class App : Application, IApp
         builder.Services.AddSingleton<ISingleInstanceService, SingleInstanceService>();
 
         builder.Services.AddTransient<PlayerViewModel>();
+        builder.Services.AddTransient<PlaybackViewModel>();
         builder.Services.AddTransient<TracksViewModel>();
         builder.Services.AddTransient<MruListViewModel>();
         builder.Services.AddTransient<PlaylistViewModel>();

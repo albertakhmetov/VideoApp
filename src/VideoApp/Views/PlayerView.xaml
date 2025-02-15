@@ -13,24 +13,6 @@
     
     <Grid x:Name="Root">
         <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="ToolbarStates">
-                <VisualState x:Name="ToolbarVisible">
-                    <Storyboard>
-                        <DoubleAnimation 
-                            Duration="0:0:0.1" To="1"
-                            Storyboard.TargetProperty="Opacity" 
-                            Storyboard.TargetName="Toolbar"/>
-                    </Storyboard>
-                </VisualState>
-                <VisualState x:Name="ToolbarHidden">
-                    <Storyboard>
-                        <DoubleAnimation 
-                            Duration="0:0:0.15" To="0"
-                            Storyboard.TargetProperty="Opacity" 
-                            Storyboard.TargetName="Toolbar"/>
-                    </Storyboard>
-                </VisualState>
-            </VisualStateGroup>
             <VisualStateGroup x:Name="NotificationStates">
                 <VisualState x:Name="NoNotifications">
                     <Storyboard>
@@ -97,7 +79,7 @@
             Initialized="VideoView_Initialized"/>
 
         <Grid 
-            Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Stopped, models:PlaybackState.Closed, models:PlaybackState.Opening), Mode=OneWay}"
+            Visibility="{x:Bind converters:Helpers.VisibleIfNot(ViewModel.PlaybackViewModel.IsActivePlayback), Mode=OneWay}"
             Background="Black">
             <Image Source="ms-appx://VideoApp/Assets/logo.png" Width="64" Height="64"/>
         </Grid>
@@ -194,10 +176,14 @@
                 </TextBlock>
             </Grid>
         </Border>
-        
-        <controls:PlayerToolbarControl 
+
+        <local:ControlView
+            x:Name="ControlLayer"
+            ViewModel="{x:Bind ViewModel, Mode=OneWay}"/>
+
+        <!--<controls:PlayerToolbarControl 
             x:Name="Toolbar" 
             Visibility="{x:Bind converters:Helpers.VisibleIf(Toolbar.Opacity), Mode=OneWay}"
-            ViewModel="{x:Bind ViewModel, Mode=OneTime}"/>
+            />-->
     </Grid>
 </UserControl>

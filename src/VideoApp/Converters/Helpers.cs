@@ -54,19 +54,9 @@ internal static class Helpers
         _ => ""
     };
 
-    public static string ToString(long value)
+    public static string ToString(int value)
     {
         return TimeSpan.FromSeconds(value).ToString();
-    }
-
-    public static bool IsEnabled(int count)
-    {
-        return count > 0;
-    }
-
-    public static bool IsEnabled(int a, int b)
-    {
-        return a + b > 0;
     }
 
     public static Visibility VisibleIf(bool value)
@@ -87,32 +77,5 @@ internal static class Helpers
     public static Visibility VisibleIfNot(double value)
     {
         return Math.Abs(value) < 0.001 ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public static Visibility VisibleIf(PlaybackState value, PlaybackState s) => VisibleIfCore(value, s);
-
-    public static Visibility VisibleIfNot(PlaybackState value, PlaybackState s) => VisibleIfNotCore(value, s);
-
-    public static Visibility VisibleIf(PlaybackState value, PlaybackState s1, PlaybackState s2) => VisibleIfCore(value, s1, s2);
-
-    public static Visibility VisibleIfNot(PlaybackState value, PlaybackState s1, PlaybackState s2) => VisibleIfNotCore(value, s1, s2);
-
-    public static Visibility VisibleIf(PlaybackState value, PlaybackState s1, PlaybackState s2, PlaybackState s3) => VisibleIfCore(value, s1, s2, s3);
-
-    public static Visibility VisibleIfNot(PlaybackState value, PlaybackState s1, PlaybackState s2, PlaybackState s3) => VisibleIfNotCore(value, s1, s2, s3);
-
-    public static Visibility VisibleIfCore(PlaybackState value, params PlaybackState[] expected)
-    {
-        return expected.Contains(value) ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public static Visibility VisibleIfNotCore(PlaybackState value, params PlaybackState[] expected)
-    {
-        return !expected.Contains(value) ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public static bool Not(bool value)
-    {
-        return !value;
     }
 }

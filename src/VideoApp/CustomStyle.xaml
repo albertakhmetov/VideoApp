@@ -5,6 +5,8 @@
     xmlns:local="using:VideoApp">
 
     <Style x:Key="PlayButton" TargetType="Button">
+        <Setter Property="Padding" Value="14"/>
+        <Setter Property="Margin" Value="4"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -98,8 +100,10 @@
         </Setter>
     </Style>
 
-    <Style x:Key="PlaybackButton" TargetType="Button">
-        <Setter Property="Margin" Value="10,0,10,0"/>
+    <Style x:Key="ControlButton" TargetType="Button">
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Margin" Value="4"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -152,10 +156,9 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-
                         <Border
                             Name="Border"
-                            CornerRadius="4"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             Background="{ThemeResource ControlFillColorTransparentBrush}">
 
                             <ContentPresenter 

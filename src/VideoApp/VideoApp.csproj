@@ -56,9 +56,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controls\PlayerToolbarControl.xaml.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="ControlStyles.xaml" />
-		<None Remove="Controls\PlayerToolbarControl.xaml" />
 		<None Remove="CustomStyle.xaml" />
+		<None Remove="Views\ControlView.xaml" />
+		<None Remove="Views\NotificationView.xaml" />
 		<None Remove="Views\PlayerView.xaml" />
 		<None Remove="Views\SettingsView.xaml" />
 	</ItemGroup>
@@ -88,7 +93,13 @@
 		<None Update="App.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
-		<Page Update="Controls\PlayerToolbarControl.xaml">
+		<Page Update="Views\PlayerView.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\ControlView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\NotificationView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>		
 		<Page Update="ControlStyles.xaml">
@@ -104,9 +115,6 @@
 		<None Update="MainWindow.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
-		<Page Update="Views\PlayerView.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
 	</ItemGroup>
 
 	<ItemGroup>

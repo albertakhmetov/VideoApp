@@ -65,6 +65,8 @@ public class PlaylistViewModel : ViewModel, IDisposable
             .DisposeWith(disposable);
     }
 
+    public bool HasItems => Items.Count > 0;
+
     public AppObservableCollection<Item> Items { get; }
 
     public event EventHandler<EventArgs>? ItemSelected;
@@ -89,12 +91,14 @@ public class PlaylistViewModel : ViewModel, IDisposable
         if (item != null)
         {
             Items.Remove(item);
+            OnPropertyChanged(nameof(HasItems));
         }
     }
 
     private void SetItems(ImmutableArray<FileItem> items)
     {
         Items.Set(items.Select(x => new Item(this, x.FullPath)));
+        OnPropertyChanged(nameof(HasItems));
     }
 
     private void SetCurrentItem(FileItem? x)
