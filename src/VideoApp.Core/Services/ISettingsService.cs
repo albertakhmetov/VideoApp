@@ -25,5 +25,9 @@ public interface ISettingsService
 {
     IObservable<AppTheme> Theme { get; }
 
-    void SetTheme(AppTheme appTheme);
+    IObservable<bool> RemainingTime { get; }
+
+    void SetTheme(AppTheme value);
+
+    void SetRemainingTime(bool value);
 }

@@ -32,12 +32,18 @@ public class PlaybackViewModel : ViewModel, IDisposable
 
     private readonly IPlaybackService playbackService;
     private readonly IPlaylistService playlistService;
+    private readonly ISettingsService settingsService;
 
     private int duration, position, volume;
     private bool isStopped, isLoading, isPlaying, isPaused;
     private bool canGoPrevious, canGoNext;
+    private bool isRemainingTimeEnabled;
 
-    public PlaybackViewModel(IServiceProvider serviceProvider, IPlaybackService playbackService, IPlaylistService playlistService)
+    public PlaybackViewModel(
+        IServiceProvider serviceProvider, 
+        IPlaybackService playbackService, 
+        IPlaylistService playlistService,
+        ISettingsService settingsService)
     {
         if (SynchronizationContext.Current == null)
         {
@@ -46,6 +52,7 @@ public class PlaybackViewModel : ViewModel, IDisposable
 
         this.playbackService = playbackService.NotNull();
         this.playlistService = playlistService.NotNull();
+        this.settingsService = settingsService.NotNull();
 
         this.playbackService
             .Duration
@@ -82,6 +89,14 @@ public class PlaybackViewModel : ViewModel, IDisposable
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => CanGoNext = !x)
             .DisposeWith(disposable);
+
+        this.settingsService
+            .RemainingTime
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => IsRemainingTimeEnabled = x)
+            .DisposeWith(disposable);
+
+        RemainingTimeCommand = new RelayCommand(_ => this.settingsService.SetRemainingTime(!IsRemainingTimeEnabled));
 
         TogglePlaybackCommand = serviceProvider
             .NotNull()
@@ -183,6 +198,14 @@ public class PlaybackViewModel : ViewModel, IDisposable
             }
         }
     }
+
+    public bool IsRemainingTimeEnabled
+    {
+        get => isRemainingTimeEnabled;
+        private set => Set(ref isRemainingTimeEnabled, value);
+    }
+
+    public ICommand RemainingTimeCommand { get; }
 
     public ICommand TogglePlaybackCommand { get; }
 

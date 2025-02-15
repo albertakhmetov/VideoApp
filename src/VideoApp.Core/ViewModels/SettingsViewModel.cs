@@ -28,4 +28,6 @@ public class SettingsViewModel : ViewModel
     public SettingsViewModel(IApp app)
     {
     }
+
+    public bool RemainingTime { get; } = true;
 }

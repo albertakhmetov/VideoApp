@@ -27,18 +27,28 @@ using VideoApp.Core.Services;
 internal class SettingsService : ISettingsService
 {
     private readonly BehaviorSubject<AppTheme> themeSubject;
+    private readonly BehaviorSubject<bool> remainingTimeSubject;
 
     public SettingsService()
     {
         themeSubject = new BehaviorSubject<AppTheme>(AppTheme.Dark);
+        remainingTimeSubject = new BehaviorSubject<bool>(true);
 
         Theme = themeSubject.AsObservable();
+        RemainingTime = remainingTimeSubject.AsObservable();
     }
 
     public IObservable<AppTheme> Theme { get; }
 
-    public void SetTheme(AppTheme appTheme)
+    public IObservable<bool> RemainingTime { get; }
+
+    public void SetTheme(AppTheme value)
     {
-        throw new NotImplementedException();
+        themeSubject.OnNext(value);
+    }
+
+    public void SetRemainingTime(bool value)
+    {
+        remainingTimeSubject.OnNext(value);
     }
 }

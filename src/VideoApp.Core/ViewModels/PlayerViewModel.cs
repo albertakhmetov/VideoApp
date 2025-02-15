@@ -74,6 +74,8 @@ public class PlayerViewModel : ViewModel, IDisposable
         TracksViewModel = serviceProvider.GetRequiredService<TracksViewModel>();
         PlaybackViewModel = serviceProvider.GetRequiredService<PlaybackViewModel>();
         StartupViewModel = serviceProvider.GetRequiredService<StartupViewModel>();
+
+        Settings = serviceProvider.GetRequiredService<SettingsViewModel>();
     }
 
     public PlaybackState State
@@ -99,6 +101,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     public PlaybackViewModel PlaybackViewModel { get; }
 
     public StartupViewModel StartupViewModel { get; }
+
+    public SettingsViewModel Settings { get; }
 
     public void Dispose()
     {
