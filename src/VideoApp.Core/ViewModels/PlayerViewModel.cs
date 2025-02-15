@@ -40,9 +40,6 @@ public class PlayerViewModel : ViewModel, IDisposable
     private int duration, position, volume;
     private PlaybackState state;
 
-    private ImmutableArray<TrackInfo> audioTracks = [], subtitleTracks = [];
-    private int audioTrackId, subtitleTrackId;
-
     public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
     {
         if (SynchronizationContext.Current == null)
@@ -80,30 +77,6 @@ public class PlayerViewModel : ViewModel, IDisposable
             .Subscribe(x => State = x)
             .DisposeWith(disposable);
 
-        playbackService
-            .AudioTracks
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => AudioTracks = x)
-            .DisposeWith(disposable);
-
-        playbackService
-            .SubtitleTracks
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => SubtitleTracks = x)
-            .DisposeWith(disposable);
-
-        playbackService
-            .AudioTrack
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => AudioTrackId = x)
-            .DisposeWith(disposable);
-
-        playbackService
-            .SubtitleTrack
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => SubtitleTrackId = x)
-            .DisposeWith(disposable);
-
         OpenMediaFileCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
@@ -123,6 +96,7 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
         PlaylistViewModel = serviceProvider.GetRequiredService<PlaylistViewModel>();
+        TracksViewModel = serviceProvider.GetRequiredService<TracksViewModel>();
     }
 
     public int Duration
@@ -163,42 +137,6 @@ public class PlayerViewModel : ViewModel, IDisposable
         _ => ""
     };
 
-    public ImmutableArray<TrackInfo> AudioTracks
-    {
-        get => audioTracks;
-        private set => Set(ref audioTracks, value);
-    }
-
-    public ImmutableArray<TrackInfo> SubtitleTracks
-    {
-        get => subtitleTracks;
-        private set => Set(ref subtitleTracks, value);
-    }
-
-    public int AudioTrackId
-    {
-        get => audioTrackId;
-        set
-        {
-            if (Set(ref audioTrackId, value))
-            {
-                playbackService.SetAudioTrack(value);
-            }
-        }
-    }
-
-    public int SubtitleTrackId
-    {
-        get => subtitleTrackId;
-        set
-        {
-            if (Set(ref subtitleTrackId, value))
-            {
-                playbackService.SetSubtitleTrack(value);
-            }
-        }
-    }
-
     public CommandBase OpenMediaFileCommand { get; }
 
     public ICommand SettingsCommand { get; }
@@ -220,6 +158,8 @@ public class PlayerViewModel : ViewModel, IDisposable
     public MruListViewModel MruListViewModel { get; }
 
     public PlaylistViewModel PlaylistViewModel { get; }
+
+    public TracksViewModel TracksViewModel { get; }
 
     public void Dispose()
     {

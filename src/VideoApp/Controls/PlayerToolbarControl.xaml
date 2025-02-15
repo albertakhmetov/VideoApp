@@ -176,35 +176,70 @@
                     <Button 
                         Style="{StaticResource PlaybackButton}"
                         Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.State, models:PlaybackState.Playing, models:PlaybackState.Paused), Mode=OneWay}"
-                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.AudioTracks.Length, ViewModel.SubtitleTracks.Length), Mode=OneWay}">
+                        IsEnabled="{x:Bind converters:Helpers.IsEnabled(ViewModel.TracksViewModel.AudioTracks.Count, ViewModel.TracksViewModel.SubtitleTracks.Count), Mode=OneWay}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xED1E;" />
                         </Button.Content>
 
-                        <Button.Resources>
-                            <Style x:Key="TrackMenuSeparator" TargetType="MenuFlyoutSeparator">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="MenuFlyoutSeparator">
-                                            <TextBlock
-                                                Text="{Binding}"
-                                                Margin="12,8,0,4"
-                                                Foreground="{ThemeResource TextOnAccentFillColorDisabledBrush}"
-                                                Style="{ThemeResource CaptionTextBlockStyle}"/>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Resources>
-
                         <Button.Flyout>
-                            <MenuFlyout x:Name="TracksFlyout">
-                                <MenuFlyoutSeparator Style="{StaticResource TrackMenuSeparator}" DataContext="Audio"/>
+                            <Flyout x:Name="TracksFlyout">
+                                <StackPanel Margin="-8">
+                                    <TextBlock
+                                        Text="Audio"
+                                        Margin="4" 
+                                        Foreground="{ThemeResource TextOnAccentFillColorDisabledBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"/>
 
+                                    <ItemsRepeater Margin="4" ItemsSource="{x:Bind ViewModel.TracksViewModel.AudioTracks}">
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate>
+                                                <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
+                                                    <Grid>
+                                                        <Rectangle
+                                                            Visibility="{Binding IsSelected, Converter={StaticResource VisibilityConverter}}"
+                                                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                                            Width="4"
+                                                            Margin="0,4"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Stretch"
+                                                            RadiusX="2"
+                                                            RadiusY="2"/>
+                                                        <TextBlock Text="{Binding Text}" Margin="16,4,8,4"/>
+                                                    </Grid>
+                                                </local:AppItemContainer>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
 
-                                <MenuFlyoutSeparator Style="{StaticResource TrackMenuSeparator}" DataContext="Subtitle"/>
+                                    <TextBlock
+                                        Text="Subtitle"
+                                        VerticalAlignment="Center"
+                                        Margin="4" 
+                                        Foreground="{ThemeResource TextOnAccentFillColorDisabledBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"/>
 
-                            </MenuFlyout>
+                                    <ItemsRepeater Margin="4" ItemsSource="{x:Bind ViewModel.TracksViewModel.SubtitleTracks}">
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate>
+                                                <local:AppItemContainer Command="{Binding SelectCommand}" Padding="2">
+                                                    <Grid>
+                                                        <Rectangle
+                                                            Visibility="{Binding IsSelected, Converter={StaticResource VisibilityConverter}}"
+                                                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                                            Width="4"
+                                                            Margin="0,4"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Stretch"
+                                                            RadiusX="2"
+                                                            RadiusY="2"/>
+                                                        <TextBlock Text="{Binding Text}" Margin="16,4,8,4"/>
+                                                    </Grid>
+                                                </local:AppItemContainer>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </StackPanel>
+                            </Flyout>
                         </Button.Flyout>
                     </Button>
 
