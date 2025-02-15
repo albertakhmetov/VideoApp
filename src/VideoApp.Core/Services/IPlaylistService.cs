@@ -27,7 +27,15 @@ public interface IPlaylistService : IDisposable
 
     IObservable<FileItem?> CurrentItem { get; }
 
+    IObservable<bool> IsFirstItem { get; }
+
+    IObservable<bool> IsLastItem { get; }
+
     void SetItems(PlaylistItems items);
 
     void SetCurrentItem(FileItem item);
+
+    Task GoPrevious();
+
+    Task GoNext();
 }

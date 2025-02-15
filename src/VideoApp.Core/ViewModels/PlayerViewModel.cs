@@ -37,7 +37,7 @@ public class PlayerViewModel : ViewModel, IDisposable
     private readonly IApp app;
     private readonly IPlaybackService playbackService;
 
-    private int duration, position, volume;
+    private int volume;
     private PlaybackState state;
 
     public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
@@ -52,25 +52,6 @@ public class PlayerViewModel : ViewModel, IDisposable
         this.playbackService = playbackService.NotNull();
 
         playbackService
-            .Duration
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Duration = x)
-            .DisposeWith(disposable);
-
-        playbackService
-            .Position
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Position = x)
-            .DisposeWith(disposable);
-
-        playbackService
-            .Volume
-            .Throttle(TimeSpan.FromMilliseconds(200))
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => Set(ref volume, x, nameof(Volume)))
-            .DisposeWith(disposable);
-
-        playbackService
             .State
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
@@ -81,71 +62,31 @@ public class PlayerViewModel : ViewModel, IDisposable
             .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
 
-
         SettingsCommand = this.serviceProvider
             .GetRequiredKeyedService<CommandBase>(nameof(SettingsCommand));
 
         ToggleFullScreenCommand = new RelayCommand(x => this.app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
-
-        AdjustVolumeCommand = new RelayCommand(x => AdjustVolume(x is int direction ? direction : 0));
-        PositionCommand = new RelayCommand(x => SetPosition(x));
+        
         ExitCommand = new RelayCommand(_ => app.Exit());
 
         MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
         PlaylistViewModel = serviceProvider.GetRequiredService<PlaylistViewModel>();
         TracksViewModel = serviceProvider.GetRequiredService<TracksViewModel>();
         PlaybackViewModel = serviceProvider.GetRequiredService<PlaybackViewModel>();
-    }
-
-    public int Duration
-    {
-        get => duration;
-        private set => Set(ref duration, value);
-    }
-
-    public int Position
-    {
-        get => position;
-        set => Set(ref position, value);
-    }
-
-    public int Volume
-    {
-        get => volume;
-        set => playbackService.SetVolume(value);
+        StartupViewModel = serviceProvider.GetRequiredService<StartupViewModel>();
     }
 
     public PlaybackState State
     {
         get => state;
-        private set
-        {
-            if (Set(ref state, value))
-            {
-                OnPropertyChanged(nameof(StateText));
-            }
-        }
+        private set => Set(ref state, value);
     }
-
-    public string StateText => State switch
-    {
-        PlaybackState.Playing => "Playing",
-        PlaybackState.Paused => "Paused",
-        PlaybackState.Stopped => "Stopped",
-        _ => ""
-    };
 
     public CommandBase OpenMediaFileCommand { get; }
 
     public ICommand SettingsCommand { get; }
 
     public ICommand ToggleFullScreenCommand { get; }
-
-
-
-    public ICommand AdjustVolumeCommand { get; }
-
-    public ICommand PositionCommand { get; }
 
     public ICommand ExitCommand { get; }
 
@@ -157,34 +98,13 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     public PlaybackViewModel PlaybackViewModel { get; }
 
+    public StartupViewModel StartupViewModel { get; }
+
     public void Dispose()
     {
         if (!disposable.IsDisposed)
         {
             disposable.Dispose();
-        }
-    }
-
-    private async void AdjustVolume(int direction)
-    {
-        if (direction == 0)
-        {
-            return;
-        }
-
-        var newVolume = (Volume / 5) * 5 + Math.Sign(direction) * 5;
-
-        playbackService.SetVolume(newVolume);
-        Set(ref volume, await playbackService.Volume.FirstOrDefaultAsync(), nameof(Volume));
-    }
-
-
-
-    private void SetPosition(object? x)
-    {
-        if (x is int newPosition)
-        {
-            playbackService.SetPosition(newPosition);
         }
     }
 }

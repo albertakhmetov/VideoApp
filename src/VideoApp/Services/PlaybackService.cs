@@ -353,6 +353,26 @@ public sealed class PlaybackService : IPlaybackService
         return true;
     }
 
+    public bool DecreaseValue(int step)
+    {
+        if (!IsInitialized || mediaPlayer == null)
+        {
+            return false;
+        }
+
+        return SetVolume((volumeSubject.Value / step) * step - step);
+    }
+
+    public bool IncreaseVolume(int step)
+    {
+        if (!IsInitialized || mediaPlayer == null)
+        {
+            return false;
+        }
+
+        return SetVolume((volumeSubject.Value / step) * step + step);
+    }
+
     public bool SetAudioTrack(int trackId)
     {
         if (!IsInitialized || mediaPlayer == null)

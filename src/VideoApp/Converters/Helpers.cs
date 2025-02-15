@@ -59,6 +59,11 @@ internal static class Helpers
         return TimeSpan.FromSeconds(value).ToString();
     }
 
+    public static bool Not(bool value)
+    {
+        return !value;
+    }
+
     public static Visibility VisibleIf(bool value)
     {
         return value == true ? Visibility.Visible : Visibility.Collapsed;

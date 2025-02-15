@@ -76,6 +76,13 @@
                                                 KeyTime="0" 
                                                 Value="{ThemeResource AccentFillColorDisabledBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames 
+                                          Storyboard.TargetProperty="Foreground" 
+                                          Storyboard.TargetName="ContentPresenter">
+                                            <DiscreteObjectKeyFrame 
+                                                KeyTime="0" 
+                                                Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
@@ -89,11 +96,11 @@
                             Stroke="{ThemeResource AccentFillColorDefaultBrush}"
                             Fill="{ThemeResource ControlFillColorTransparentBrush}"/>
                         <ContentPresenter 
-                           Name="ContentPresenter"
-                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                           Margin="{TemplateBinding Padding}"
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" />
+                            Name="ContentPresenter"                            
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

@@ -18,12 +18,48 @@
  */
 namespace VideoApp.Views;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using VideoApp.Core.ViewModels;
 
 public sealed partial class NotificationView : UserControl
 {
+    public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
+        nameof(ViewModel),
+        typeof(PlayerViewModel),
+        typeof(NotificationView),
+        new PropertyMetadata(null, OnViewModelChanged));
+
+    private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is NotificationView control)
+        {
+            if (e.NewValue is PlayerViewModel viewModel)
+            {
+                control.Bindings?.Update();
+            }
+            else
+            {
+                control.Bindings?.StopTracking();
+            }
+        }
+    }
+
     public NotificationView()
     {
         this.InitializeComponent();
+
+        this.Unloaded += OnUnloaded;
+    }
+
+    public PlayerViewModel? ViewModel
+    {
+        get => (PlayerViewModel)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        Bindings?.StopTracking();
     }
 }

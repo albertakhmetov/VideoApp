@@ -68,6 +68,10 @@ public interface IPlaybackService : IDisposable
 
     bool SetVolume(int volume);
 
+    bool DecreaseValue(int value);
+
+    bool IncreaseVolume(int value);
+
     bool SetAudioTrack(int trackId);
 
     bool SetSubtitleTrack(int trackId);

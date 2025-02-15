@@ -31,11 +31,13 @@ public class PlaybackViewModel : ViewModel, IDisposable
     private CompositeDisposable disposable = new CompositeDisposable();
 
     private readonly IPlaybackService playbackService;
+    private readonly IPlaylistService playlistService;
 
-    private int duration, position;
+    private int duration, position, volume;
     private bool isStopped, isLoading, isPlaying, isPaused;
+    private bool canGoPrevious, canGoNext;
 
-    public PlaybackViewModel(IServiceProvider serviceProvider, IPlaybackService playbackService)
+    public PlaybackViewModel(IServiceProvider serviceProvider, IPlaybackService playbackService, IPlaylistService playlistService)
     {
         if (SynchronizationContext.Current == null)
         {
@@ -43,32 +45,58 @@ public class PlaybackViewModel : ViewModel, IDisposable
         }
 
         this.playbackService = playbackService.NotNull();
+        this.playlistService = playlistService.NotNull();
 
-        playbackService
+        this.playbackService
             .Duration
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Duration = x)
             .DisposeWith(disposable);
 
-        playbackService
+        this.playbackService
             .Position
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => Position = x)
             .DisposeWith(disposable);
 
-        playbackService
+        this.playbackService
             .State
-            .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => UpdateState(x))
+            .DisposeWith(disposable);
+
+        this.playbackService
+            .Volume
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => Volume = x)
+            .DisposeWith(disposable);
+
+        this.playlistService
+            .IsFirstItem
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => CanGoPrevious = !x)
+            .DisposeWith(disposable);
+
+        this.playlistService
+            .IsLastItem
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => CanGoNext = !x)
             .DisposeWith(disposable);
 
         TogglePlaybackCommand = serviceProvider
             .NotNull()
             .GetRequiredKeyedService<CommandBase>(nameof(TogglePlaybackCommand));
-        
-        SkipBackCommand = new RelayCommand(_ => SkipBack());
-        SkipForwardCommand = new RelayCommand(_ => SkipForward());
+
+        GoPreviousCommand = new RelayCommand(_ => this.playlistService.GoPrevious());
+        GoNextCommand = new RelayCommand(_ => this.playlistService.GoNext());
+
+        PositionCommand = new RelayCommand(x => SetPosition(x));
+        SkipBackCommand = new RelayCommand(_ => this.playbackService.SkipBack(TimeSpan.FromSeconds(10)));
+        SkipForwardCommand = new RelayCommand(_ => this.playbackService.SkipForward(TimeSpan.FromSeconds(10)));
+
+        VolumeCommand = new RelayCommand(x => SetVolume(x));
+        DecreaseVolumeCommand = new RelayCommand(_ => this.playbackService.DecreaseValue(5));
+        IncreaseVolumeCommand = new RelayCommand(_ => this.playbackService.IncreaseVolume(5));
     }
 
     public int Duration
@@ -98,6 +126,24 @@ public class PlaybackViewModel : ViewModel, IDisposable
                 OnPropertyChanged(nameof(RemainingTime));
             }
         }
+    }
+
+    public int Volume
+    {
+        get => volume;
+        private set => Set(ref volume, value);
+    }
+
+    public bool CanGoPrevious
+    {
+        get => canGoPrevious && (IsActivePlayback || IsStopped);
+        private set => Set(ref canGoPrevious, value);
+    }
+
+    public bool CanGoNext
+    {
+        get => canGoNext && (IsActivePlayback || IsStopped);
+        private set => Set(ref canGoNext, value);
     }
 
     public bool IsStopped
@@ -140,9 +186,21 @@ public class PlaybackViewModel : ViewModel, IDisposable
 
     public ICommand TogglePlaybackCommand { get; }
 
+    public ICommand GoPreviousCommand { get; }
+
+    public ICommand GoNextCommand { get; }
+
+    public ICommand PositionCommand { get; }
+
     public ICommand SkipBackCommand { get; }
 
     public ICommand SkipForwardCommand { get; }
+
+    public ICommand VolumeCommand { get; }
+
+    public ICommand DecreaseVolumeCommand { get; }
+
+    public ICommand IncreaseVolumeCommand { get; }
 
     public void Dispose()
     {
@@ -154,22 +212,29 @@ public class PlaybackViewModel : ViewModel, IDisposable
 
     private void UpdateState(PlaybackState x)
     {
-        IsStopped = x == PlaybackState.Closed
-            || x == PlaybackState.Opening
-            || x == PlaybackState.Stopped;
+        IsStopped = x == PlaybackState.Stopped;
 
         IsLoading = x == PlaybackState.Opening;
         IsPlaying = x == PlaybackState.Playing;
         IsPaused = x == PlaybackState.Paused;
+
+        OnPropertyChanged(nameof(CanGoPrevious));
+        OnPropertyChanged(nameof(CanGoNext));
     }
 
-    private void SkipBack()
+    private void SetPosition(object? x)
     {
-        playbackService.SkipBack(TimeSpan.FromSeconds(10));
+        if (x is int newPosition)
+        {
+            playbackService.SetPosition(newPosition);
+        }
     }
 
-    private void SkipForward()
+    private void SetVolume(object? x)
     {
-        playbackService.SkipForward(TimeSpan.FromSeconds(10));
+        if (x is int newVolume)
+        {
+            playbackService.SetVolume(newVolume);
+        }
     }
 }

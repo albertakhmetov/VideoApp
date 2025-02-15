@@ -32,35 +32,46 @@ class PlaylistService : IPlaylistService
 {
     private CompositeDisposable disposable = new CompositeDisposable();
 
+    private readonly IPlaybackService playbackService;
+
     private readonly BehaviorSubject<PlaylistItems> itemsSubject;
     private readonly BehaviorSubject<FileItem?> currentItemSubject;
+    private readonly BehaviorSubject<bool> isFirstItemSubject, isLastItemSubject;
 
     public PlaylistService(IPlaybackService playbackService)
     {
-        if (SynchronizationContext.Current == null)
-        {
-            throw new InvalidOperationException();
-        }
+        this.playbackService = playbackService.NotNull();
 
-        playbackService
+        itemsSubject = new BehaviorSubject<PlaylistItems>(PlaylistItems.Empty);
+        currentItemSubject = new BehaviorSubject<FileItem?>(null);
+        isFirstItemSubject = new BehaviorSubject<bool>(true);
+        isLastItemSubject = new BehaviorSubject<bool>(true);    
+        
+        currentItemSubject
+            .Subscribe(x => UpdateState(x))
+            .DisposeWith(disposable);
+
+        this.playbackService
             .NotNull()
             .MediaFile
             .Skip(1)
             .Throttle(TimeSpan.FromMilliseconds(200))
-            .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => UpdateCurrentItem(x))
             .DisposeWith(disposable);
 
-        itemsSubject = new BehaviorSubject<PlaylistItems>(PlaylistItems.Empty);
-        currentItemSubject = new BehaviorSubject<FileItem?>(null);
-
         Items = itemsSubject.AsObservable();
         CurrentItem = currentItemSubject.AsObservable();
+        IsFirstItem = isFirstItemSubject.AsObservable();
+        IsLastItem = isLastItemSubject.AsObservable();
     }
 
     public IObservable<PlaylistItems> Items { get; }
 
     public IObservable<FileItem?> CurrentItem { get; }
+
+    public IObservable<bool> IsFirstItem { get; }
+
+    public IObservable<bool> IsLastItem { get; }
 
     public void SetCurrentItem(FileItem item)
     {
@@ -72,9 +83,40 @@ class PlaylistService : IPlaylistService
         itemsSubject.OnNext(items);
     }
 
+    public async Task GoPrevious()
+    {
+        if (currentItemSubject.Value == null)
+        {
+            return;
+        }
+
+        var index = itemsSubject.Value.Items.IndexOf(currentItemSubject.Value);
+        if (index - 1 >= 0)
+        {
+            await playbackService.Load(itemsSubject.Value.Items[index - 1].FullPath);
+        }
+    }
+
+    public async Task GoNext()
+    {
+        if (currentItemSubject.Value == null)
+        {
+            return;
+        }
+
+        var index = itemsSubject.Value.Items.IndexOf(currentItemSubject.Value);
+        if (index + 1 < itemsSubject.Value.Items.Length)
+        {
+            await playbackService.Load(itemsSubject.Value.Items[index + 1].FullPath);
+        }
+    }
+
     public void Dispose()
     {
-        disposable.Dispose();
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
     }
 
     private void UpdateCurrentItem(FileItem? nextItem)
@@ -96,6 +138,24 @@ class PlaylistService : IPlaylistService
         {
             itemsSubject.OnNext(new PlaylistItems(0, nextItem));
             currentItemSubject.OnNext(itemsSubject.Value.Items.First());
+        }
+    }
+
+    private void UpdateState(FileItem? nextItem)
+    {
+        var item = itemsSubject.Value.Items.FirstOrDefault(x => x.Equals(nextItem));
+
+        if (item == null)
+        {
+            isFirstItemSubject.OnNext(true);
+            isLastItemSubject.OnNext(true);
+        }
+        else
+        {
+            var index = itemsSubject.Value.Items.IndexOf(item);
+
+            isFirstItemSubject.OnNext(index == 0);
+            isLastItemSubject.OnNext(index == itemsSubject.Value.Items.Length - 1);
         }
     }
 }

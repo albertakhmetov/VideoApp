@@ -1,3 +1,4 @@
 DwmSetWindowAttribute
 SetThreadExecutionState
 SetForegroundWindow
+StrCmpLogical

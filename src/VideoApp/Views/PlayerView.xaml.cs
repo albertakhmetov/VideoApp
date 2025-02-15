@@ -158,11 +158,11 @@ public sealed partial class PlayerView : UserControl
         {
             var position = e.GetPosition(this);
 
-            if (position.X < ActualWidth / 4)
+            if (position.X < ActualWidth / 6)
             {
                 SkipPosition(-1);
             }
-            else if (position.X > ActualWidth * 3 / 4)
+            else if (position.X > ActualWidth * 5 / 6)
             {
                 SkipPosition(+1);
             }
@@ -237,11 +237,18 @@ public sealed partial class PlayerView : UserControl
         notificationDisposable = Observable
             .Timer(TimeSpan.FromSeconds(1))
             .ObserveOn(SynchronizationContext.Current!)
-            .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
 
-        ViewModel?.AdjustVolumeCommand.Execute(direction);
+        if (direction < 0)
+        {
+            ViewModel?.PlaybackViewModel.DecreaseVolumeCommand.Execute(null);
+        }
+        else
+        {
+            ViewModel?.PlaybackViewModel.IncreaseVolumeCommand.Execute(null);
+        }
 
-        VisualStateManager.GoToState(this, "VolumeNotification", true);
+        VisualStateManager.GoToState(NotificationLayer, "Volume", true);
     }
 
     private void TogglePlaybackState()
@@ -256,35 +263,30 @@ public sealed partial class PlayerView : UserControl
         notificationDisposable = Observable
             .Timer(TimeSpan.FromSeconds(1))
             .ObserveOn(SynchronizationContext.Current!)
-            .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
 
         ViewModel.PlaybackViewModel.TogglePlaybackCommand.Execute(null);
-        VisualStateManager.GoToState(this, "PlaybackStateNotification", true);
+        VisualStateManager.GoToState(NotificationLayer, "PlaybackState", true);
     }
 
     private void SkipPosition(int direction)
     {
-        if (ViewModel?.State != PlaybackState.Playing)
-        {
-            return;
-        }
-
         notificationDisposable?.Dispose();
 
         notificationDisposable = Observable
             .Timer(TimeSpan.FromSeconds(1))
             .ObserveOn(SynchronizationContext.Current!)
-            .Subscribe(x => VisualStateManager.GoToState(this, "NoNotifications", true));
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
 
         if (direction < 0)
         {
             ViewModel?.PlaybackViewModel?.SkipBackCommand.Execute(null);
-            VisualStateManager.GoToState(this, "RewindNotification", true);
+            VisualStateManager.GoToState(NotificationLayer, "Rewind", true);
         }
         else
         {
             ViewModel?.PlaybackViewModel?.SkipForwardCommand.Execute(null);
-            VisualStateManager.GoToState(this, "ForwardNotification", true);
+            VisualStateManager.GoToState(NotificationLayer, "Forward", true);
         }
 
     }

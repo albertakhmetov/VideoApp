@@ -42,8 +42,7 @@ public class OpenMediaFileCommand : CommandBase
     {
         if (parameter is IEnumerable<string> list && list.Any())
         {
-            var playlist = new PlaylistItems(0, [.. list.Select(x => new FileItem(x))]);
-            playlistService.SetItems(playlist);
+            var playlist = SetItems(list.Select(x => new FileItem(x)));
 
             await playbackService.Load(playlist.Items.First().FullPath);
 
@@ -66,11 +65,30 @@ public class OpenMediaFileCommand : CommandBase
             var files = await openPicker.PickMultipleFilesAsync();
             if (files != null && files.Any())
             {
-                var playlist = new PlaylistItems(0, [.. files.Select(x => new FileItem(x.Path))]);
-                playlistService.SetItems(playlist);
+                var playlist = SetItems(files.Select(x => new FileItem(x.Path)));
 
                 await playbackService.Load(playlist.Items.First().FullPath);
             }
+        }
+    }
+
+    private PlaylistItems SetItems(IEnumerable<FileItem> items)
+    {
+        var playlistItems = new PlaylistItems(0, [.. items.OrderBy(x => x.Name, StringLogicalComparer.Instance)]);
+        playlistService.SetItems(playlistItems);
+
+        return playlistItems;
+    }
+
+    private sealed class StringLogicalComparer : IComparer<string>
+    {
+        public static readonly StringLogicalComparer Instance = new();
+
+        public int Compare(string? x, string? y)
+        {
+            return (x == null || y == null)
+                ? string.Compare(x, y)
+                : Windows.Win32.PInvoke.StrCmpLogical(x, y);
         }
     }
 }
