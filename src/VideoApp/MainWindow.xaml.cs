@@ -22,25 +22,30 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using LibVLCSharp.Platforms.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using VideoApp.Core;
 using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 using VideoApp.Core.ViewModels;
-
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using Windows.Win32.Foundation;
 
 public partial class MainWindow : Window
 {
-    private readonly CompositeDisposable disposable = new CompositeDisposable();
+    private CompositeDisposable disposable = new CompositeDisposable();
+    private IDisposable? notificationDisposable;
 
     private readonly ISystemEventsService systemEventsService;
     private readonly ISettingsService settingsService;
     private readonly IPlaybackService playbackService;
-    private readonly UserControl player, settings;
 
     private bool resumePlaybackAfterSettings;
 
@@ -55,23 +60,19 @@ public partial class MainWindow : Window
             throw new InvalidOperationException();
         }
 
+        ViewModel = serviceProvider.GetRequiredService<PlayerViewModel>();
+        SettingsViewModel = serviceProvider.GetRequiredService<SettingsViewModel>();
+
         this.systemEventsService = systemEventsService.NotNull();
         this.settingsService = settingsService.NotNull();
         this.playbackService = playbackService.NotNull();
 
         this.InitializeComponent();
 
-        player = serviceProvider.NotNull().GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
-        settings = serviceProvider.NotNull().GetRequiredKeyedService<UserControl>(nameof(SettingsViewModel));
-        settings.Visibility = Visibility.Collapsed;
-
-        Root.Children.Add(player);
-        Root.Children.Add(settings);
-
         this.settingsService
             .UI
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => ToggleSettins(x))
+            .Subscribe(x => ToggleSettings(x))
             .DisposeWith(disposable);
 
         this.settingsService
@@ -81,10 +82,40 @@ public partial class MainWindow : Window
             .Subscribe(x => UpdateTheme(x.First == AppTheme.System ? x.Second : (x.First == AppTheme.Dark)))
             .DisposeWith(disposable);
 
-        this.Closed += (_, _) => disposable.Dispose();
+
+        var activity = Observable.Merge(
+            Observable.FromEventPattern<PointerRoutedEventArgs>(Root, nameof(Control.PointerMoved)).Select(_ => true),
+            playbackService.State.Where(x => x == PlaybackState.Loading).Select(_ => true));
+
+        var inactivity = activity
+            .Throttle(TimeSpan.FromSeconds(2))
+            .StartWith(false);
+
+        activity
+            .Select(_ => false)
+            .Merge(inactivity)
+            .ObserveOn(SynchronizationContext.Current)
+            .Select(x => x && ViewModel.State == PlaybackState.Playing && !ControlLayer.IsActive)
+            .Subscribe(x => UpdateControlLayer(x))
+            .DisposeWith(disposable);
+
+        Root.Unloaded += OnUnloaded;
+
+        Root.IsTabStop = false;
+
+        Root.AllowDrop = true;
+        Root.DragOver += OnDragOver;
+        Root.Drop += OnDrop;
+
+        Root.DoubleTapped += OnDoubleTapped;
+        Root.PreviewKeyDown += OnPreviewKeyDown;
     }
 
-    private async void ToggleSettins(bool isVisible)
+    public PlayerViewModel ViewModel { get; private set; }
+
+    public SettingsViewModel SettingsViewModel { get; private set; }
+
+    private async void ToggleSettings(bool isVisible)
     {
         var state = await playbackService.State.FirstAsync();
 
@@ -96,13 +127,13 @@ public partial class MainWindow : Window
                 playbackService.Pause();
             }
 
-            player.Visibility = Visibility.Collapsed;
-            settings.Visibility = Visibility.Visible;
+            PLAYER.Visibility = Visibility.Collapsed;
+            SETTINGS.Visibility = Visibility.Visible;
         }
         else
         {
-            player.Visibility = Visibility.Visible;
-            settings.Visibility = Visibility.Collapsed;
+            PLAYER.Visibility = Visibility.Visible;
+            SETTINGS.Visibility = Visibility.Collapsed;
 
             if (resumePlaybackAfterSettings)
             {
@@ -131,6 +162,212 @@ public partial class MainWindow : Window
         if (Content is FrameworkElement element)
         {
             element.RequestedTheme = isDarkTheme ? ElementTheme.Dark : ElementTheme.Light;
+        }
+    }
+
+    private void VideoView_Initialized(object sender, InitializedEventArgs e)
+    {
+        playbackService.Initialize(sender, e.SwapChainOptions);
+    }
+
+    private async void OnDrop(object sender, DragEventArgs e)
+    {
+        if (e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            var items = await e.DataView.GetStorageItemsAsync();
+
+            ViewModel?.OpenMediaFileCommand.Execute(items.Where(x => x is StorageFile).Select(x => ((StorageFile)x).Path));
+        }
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        e.AcceptedOperation = DataPackageOperation.Link;
+        e.DragUIOverride.Caption = "Play";
+        e.DragUIOverride.IsGlyphVisible = false;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.Dispose();
+        Bindings.StopTracking();
+
+        playbackService.Pause();
+
+        Root.ShowCursor();        
+
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
+
+        notificationDisposable?.Dispose();
+        notificationDisposable = null;
+    }
+
+    private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (ViewModel?.State == PlaybackState.Playing && e.PointerDeviceType == PointerDeviceType.Touch)
+        {
+            var position = e.GetPosition(Root);
+
+            if (position.X < Root.ActualWidth / 6)
+            {
+                SkipPosition(-1);
+            }
+            else if (position.X > Root.ActualWidth * 5 / 6)
+            {
+                SkipPosition(+1);
+            }
+            else
+            {
+                ViewModel.ToggleFullScreenCommand.Execute(null);
+            }
+        }
+        else
+        {
+            ViewModel?.ToggleFullScreenCommand.Execute(null);
+        }
+
+        e.Handled = true;
+    }
+
+    private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Escape)
+        {
+            HideControlLayer();
+        }
+
+        e.Handled = ProcessKey(e);
+    }
+
+    private bool ProcessKey(KeyRoutedEventArgs e)
+    {
+        if (e.OriginalSource is VideoView == false && e.OriginalSource is Control control && control.FocusState == FocusState.Keyboard)
+        {
+            return false;
+        }
+
+        switch (e.Key)
+        {
+            case Windows.System.VirtualKey.Up:
+                UpdateVolume(+1);
+                return true;
+
+            case Windows.System.VirtualKey.Down:
+                UpdateVolume(-1);
+                return true;
+
+            case Windows.System.VirtualKey.Left:
+                SkipPosition(-1);
+                return true;
+
+            case Windows.System.VirtualKey.Right:
+                SkipPosition(+1);
+                return true;
+
+            case Windows.System.VirtualKey.Escape:
+                ViewModel?.ToggleFullScreenCommand.Execute(false);
+                return true;
+
+            case Windows.System.VirtualKey.Space:
+                TogglePlaybackState();
+                return true;
+
+
+            default:
+                return false;
+        }
+    }
+
+    private void UpdateVolume(int direction)
+    {
+        notificationDisposable?.Dispose();
+
+        notificationDisposable = Observable
+            .Timer(TimeSpan.FromSeconds(1))
+            .ObserveOn(SynchronizationContext.Current!)
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
+
+        if (direction < 0)
+        {
+            ViewModel?.PlaybackViewModel.DecreaseVolumeCommand.Execute(null);
+        }
+        else
+        {
+            ViewModel?.PlaybackViewModel.IncreaseVolumeCommand.Execute(null);
+        }
+
+        VisualStateManager.GoToState(NotificationLayer, "Volume", true);
+    }
+
+    private void TogglePlaybackState()
+    {
+        if (ViewModel?.State != PlaybackState.Paused && ViewModel?.State != PlaybackState.Playing)
+        {
+            return;
+        }
+
+        notificationDisposable?.Dispose();
+
+        notificationDisposable = Observable
+            .Timer(TimeSpan.FromSeconds(1))
+            .ObserveOn(SynchronizationContext.Current!)
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
+
+        ViewModel.PlaybackViewModel.TogglePlaybackCommand.Execute(null);
+        VisualStateManager.GoToState(NotificationLayer, "PlaybackState", true);
+    }
+
+    private void SkipPosition(int direction)
+    {
+        notificationDisposable?.Dispose();
+
+        notificationDisposable = Observable
+            .Timer(TimeSpan.FromSeconds(1))
+            .ObserveOn(SynchronizationContext.Current!)
+            .Subscribe(x => VisualStateManager.GoToState(NotificationLayer, "None", true));
+
+        if (direction < 0)
+        {
+            ViewModel?.PlaybackViewModel?.SkipBackCommand.Execute(null);
+            VisualStateManager.GoToState(NotificationLayer, "Rewind", true);
+        }
+        else
+        {
+            ViewModel?.PlaybackViewModel?.SkipForwardCommand.Execute(null);
+            VisualStateManager.GoToState(NotificationLayer, "Forward", true);
+        }
+    }
+
+    private void UpdateControlLayer(bool hide)
+    {
+        if (hide)
+        {
+            HideControlLayer();
+        }
+        else
+        {
+            ShowControlLayer();
+        }
+    }
+
+    private void ShowControlLayer()
+    {
+        if (VisualStateManager.GoToState(ControlLayer, "Visible", true))
+        {
+            Root.ShowCursor();
+        }
+    }
+
+    private void HideControlLayer()
+    {
+        if (VisualStateManager.GoToState(ControlLayer, "Hidden", true))
+        {
+            ControlLayer.Focus(FocusState.Programmatic);
+
+            Root.HideCursor();
         }
     }
 }

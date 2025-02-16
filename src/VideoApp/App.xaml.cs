@@ -223,9 +223,6 @@ public partial class App : Application, IApp
         builder.Services.AddTransient<PlaylistViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
-        builder.Services.AddKeyedSingleton<UserControl, PlayerView>(nameof(PlayerViewModel));
-        builder.Services.AddKeyedSingleton<UserControl, SettingsView>(nameof(SettingsViewModel));
-
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));
         builder.Services.AddKeyedSingleton<CommandBase, TogglePlaybackCommand>(nameof(TogglePlaybackCommand));
 

@@ -18,18 +18,42 @@
  */
 namespace VideoApp.Views;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using VideoApp.Core;
 using VideoApp.Core.ViewModels;
 
 public sealed partial class SettingsView : UserControl
 {
-    public SettingsView(SettingsViewModel viewModel)
-    {
-        ViewModel = viewModel.NotNull();
+    public static DependencyProperty ViewModelProperty = DependencyProperty.Register(
+        nameof(ViewModel),
+        typeof(SettingsViewModel),
+        typeof(SettingsView),
+        new PropertyMetadata(null, OnViewModelChanged));
 
+    private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is SettingsView control)
+        {
+            if (e.NewValue is SettingsViewModel viewModel)
+            {
+                control.Bindings?.Update();
+            }
+            else
+            {
+                control.Bindings?.StopTracking();
+            }
+        }
+    }
+
+    public SettingsView()
+    {
         this.InitializeComponent();
     }
 
-    public SettingsViewModel ViewModel { get; }
+    public SettingsViewModel? ViewModel
+    {
+        get => (SettingsViewModel)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
 }
