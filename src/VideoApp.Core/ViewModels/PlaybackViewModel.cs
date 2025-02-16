@@ -237,7 +237,7 @@ public class PlaybackViewModel : ViewModel, IDisposable
     {
         IsStopped = x == PlaybackState.Stopped;
 
-        IsLoading = x == PlaybackState.Opening;
+        IsLoading = x == PlaybackState.Loading;
         IsPlaying = x == PlaybackState.Playing;
         IsPaused = x == PlaybackState.Paused;
 

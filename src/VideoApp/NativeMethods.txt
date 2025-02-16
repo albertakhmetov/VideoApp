@@ -2,3 +2,4 @@ DwmSetWindowAttribute
 SetThreadExecutionState
 SetForegroundWindow
 StrCmpLogical
+GetTickCount

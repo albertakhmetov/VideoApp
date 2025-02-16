@@ -154,7 +154,7 @@ public sealed class PlaybackService : IPlaybackService
 
             Observable
                 .FromEventPattern<EventArgs>(mediaPlayer, nameof(MediaPlayer.Opening))
-                .Subscribe(x => stateSubject.OnNext(PlaybackState.Opening))
+                .Subscribe(x => stateSubject.OnNext(PlaybackState.Loading))
                 .DisposeWith(disposable);
 
             Observable
@@ -204,7 +204,7 @@ public sealed class PlaybackService : IPlaybackService
         {
             Stop();
 
-            stateSubject.OnNext(PlaybackState.Opening);
+            stateSubject.OnNext(PlaybackState.Loading);
 
             using var media = new Media(libVCL, new Uri(fileName));
 

@@ -22,7 +22,7 @@ public enum PlaybackState
 {
     NotInitialized,
     Closed,
-    Opening,
+    Loading,
     Buffering,
     Playing,
     Paused,

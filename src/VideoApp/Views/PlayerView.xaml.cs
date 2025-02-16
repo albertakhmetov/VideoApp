@@ -89,44 +89,22 @@ public sealed partial class PlayerView : UserControl
 
         var activity = Observable.Merge(
             Observable.FromEventPattern<PointerRoutedEventArgs>(this, nameof(Control.PointerMoved)).Select(_ => true),
-            Observable.FromEventPattern<DragEventArgs>(this, nameof(Control.DragOver)).Select(_ => true));
+            playbackService.State.Where(x => x == PlaybackState.Loading).Select(_ => true));
+
+        var inactivity = activity
+            .Throttle(TimeSpan.FromSeconds(2))
+            .StartWith(false);
 
         activity
-            .Subscribe(_ => ShowToolbar())
-            .DisposeWith(disposable);
-
-        activity
-            .Throttle(TimeSpan.FromSeconds(1.2))
+            .Select(_ => false)
+            .Merge(inactivity)
             .ObserveOn(SynchronizationContext.Current)
-            .Where(_ => ViewModel.State == PlaybackState.Playing && !ControlLayer.IsActive)
-            .Subscribe(_ => HideToolbar())
+            .Select(x => x && ViewModel.State == PlaybackState.Playing && !ControlLayer.IsActive)
+            .Subscribe(x => UpdateControlLayer(x))
             .DisposeWith(disposable);
 
         Bindings.Initialize();
         Bindings.Update();
-    }
-
-    private void ShowToolbar()
-    {
-        if (VisualStateManager.GoToState(ControlLayer, "Visible", true))
-        {
-            ProtectedCursor = null;
-        }
-    }
-
-    private void HideToolbar()
-    {
-        if (VisualStateManager.GoToState(ControlLayer, "Hidden", true))
-        {
-            ControlLayer.Focus(FocusState.Programmatic);
-
-            if (ProtectedCursor == null)
-            {
-                ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
-            }
-
-            ProtectedCursor.Dispose();
-        }
     }
 
     private void PlayerView_Unloaded(object sender, RoutedEventArgs e)
@@ -183,7 +161,7 @@ public sealed partial class PlayerView : UserControl
     {
         if (e.Key == Windows.System.VirtualKey.Escape)
         {
-            HideToolbar();
+            HideControlLayer();
         }
 
         e.Handled = ProcessKey(e);
@@ -288,6 +266,40 @@ public sealed partial class PlayerView : UserControl
             ViewModel?.PlaybackViewModel?.SkipForwardCommand.Execute(null);
             VisualStateManager.GoToState(NotificationLayer, "Forward", true);
         }
+    }
 
+    private void UpdateControlLayer(bool hide)
+    {
+        if (hide)
+        {
+            HideControlLayer();
+        }
+        else
+        {
+            ShowControlLayer();
+        }
+    }
+
+    private void ShowControlLayer()
+    {
+        if (VisualStateManager.GoToState(ControlLayer, "Visible", true))
+        {
+            ProtectedCursor = null;
+        }
+    }
+
+    private void HideControlLayer()
+    {
+        if (VisualStateManager.GoToState(ControlLayer, "Hidden", true))
+        {
+            ControlLayer.Focus(FocusState.Programmatic);
+
+            if (ProtectedCursor == null)
+            {
+                ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
+            }
+
+            ProtectedCursor.Dispose();
+        }
     }
 }
