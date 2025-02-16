@@ -29,7 +29,7 @@
             Margin="8"
             VerticalAlignment="Center"
             Text="Settings"
-            Style="{ThemeResource TitleLargeTextBlockStyle}"/>
+            Style="{ThemeResource TitleTextBlockStyle}"/>
 
         <ScrollView Grid.Column="1" Grid.Row="1">
             <StackPanel Padding="8,16,16,16">
@@ -68,7 +68,7 @@
 
                 <TextBlock Margin="0,0,0,8">
                     <Run Text="{x:Bind ViewModel.Info.ProductName}"/>
-                    <Run Text="{x:Bind ViewModel.Info.FileVersion}"/>
+                    <Run Text="{x:Bind ViewModel.Info.ProductVersion}"/>
                 </TextBlock>
 
                 <TextBlock 

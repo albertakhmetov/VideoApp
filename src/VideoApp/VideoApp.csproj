@@ -21,7 +21,7 @@
 		<Copyright>© 2025, Albert Akhmetov</Copyright>
 		<Authors>Albert Akhmetov</Authors>
 		<Product>VideoApp</Product>
-		<Version>0.1.0</Version>
+		<Version>1.0.0-alpha1</Version>
 		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 		<PackageIcon></PackageIcon>
 		<PackageIconUrl />

@@ -38,7 +38,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Win32.Foundation;
 
-public partial class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     private CompositeDisposable disposable = new CompositeDisposable();
     private IDisposable? notificationDisposable;

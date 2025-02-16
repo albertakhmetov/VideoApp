@@ -52,7 +52,7 @@ internal class SettingsService : ISettingsService, IDisposable
 
         isModifiedSubject = new BehaviorSubject<bool>(false);
         isModifiedSubject
-            .Throttle(TimeSpan.FromMilliseconds(1000))
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Where(x => x)
             .Subscribe(_ => Save())
             .DisposeWith(disposable);

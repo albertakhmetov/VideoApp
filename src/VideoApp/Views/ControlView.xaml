@@ -127,7 +127,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,28,0">
                     <Button Command="{x:Bind ViewModel.OpenMediaFileCommand}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xF847;" />
@@ -252,9 +252,8 @@
                     </Button>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="28,0,0,0">
                     <Button 
-                        Visibility="{x:Bind converters:Helpers.VisibleIf(ViewModel.PlaybackViewModel.IsActivePlayback), Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.TracksViewModel.HasTracks, Mode=OneWay}">
                         <Button.Content>
                             <FontIcon Margin="0,0,0,0" Glyph="&#xED1E;" />

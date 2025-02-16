@@ -32,7 +32,7 @@ public sealed class AppInfo
         var info = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
 
         ProductName = info.ProductName ?? string.Empty;
-        ProductVersion = info.ProductVersion ?? string.Empty;
+        ProductVersion = GetProductVersion(info.ProductVersion ?? string.Empty);
         Comments = info.Comments ?? string.Empty;
         Copyright = info.LegalCopyright ?? string.Empty;
         Runtime = $"{Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName}";
@@ -59,4 +59,18 @@ public sealed class AppInfo
     public Version FileVersion { get; }
 
     public bool IsPreRelease { get; }
+
+    private string GetProductVersion(string productVersion)
+    {
+        var plusIndex = productVersion.IndexOf("+");
+
+        if (plusIndex > -1)
+        {
+            return productVersion.Substring(0, plusIndex);
+        }
+        else
+        {
+            return productVersion;
+        }
+    }
 }
