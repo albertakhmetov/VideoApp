@@ -35,6 +35,7 @@ using Microsoft.Windows.AppLifecycle;
 using VideoApp.Commands;
 using VideoApp.Core;
 using VideoApp.Core.Commands;
+using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 using VideoApp.Core.ViewModels;
 using VideoApp.Services;
@@ -92,8 +93,11 @@ public partial class App : Application, IApp
     {
         this.arguments = ImmutableArray.Create(args);
 
+        Info = new AppInfo(new FileInfo(typeof(App).Assembly.Location));
         InitializeComponent();
     }
+
+    public AppInfo Info { get; }
 
     public nint WindowHandle => mainWindow == null ? nint.Zero : WindowNative.GetWindowHandle(mainWindow);
 
@@ -204,6 +208,7 @@ public partial class App : Application, IApp
         builder.Services.AddHostedService<PipeService>();
 
         builder.Services.AddSingleton<IApp>(this);
+        builder.Services.AddSingleton<ISystemEventsService, SystemEventsService>();
         builder.Services.AddSingleton<IPlaybackService, PlaybackService>();
         builder.Services.AddSingleton<IMruListService, MruListService>();
         builder.Services.AddSingleton<IPlaylistService, PlaylistService>();
@@ -223,7 +228,6 @@ public partial class App : Application, IApp
 
         builder.Services.AddKeyedSingleton<CommandBase, OpenMediaFileCommand>(nameof(OpenMediaFileCommand));
         builder.Services.AddKeyedSingleton<CommandBase, TogglePlaybackCommand>(nameof(TogglePlaybackCommand));
-        builder.Services.AddKeyedSingleton<CommandBase, SettingsCommand>(nameof(SettingsCommand));
 
         return builder.Build();
     }

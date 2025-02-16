@@ -19,15 +19,60 @@
 namespace VideoApp.Core.ViewModels;
 
 using System;
+using System.Collections.Immutable;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows.Input;
 using VideoApp.Core.Commands;
+using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 
 public class SettingsViewModel : ViewModel
 {
-    public SettingsViewModel(IApp app)
+    private CompositeDisposable disposable = new CompositeDisposable();
+
+    private readonly ISettingsService settingsService;
+
+    private AppTheme theme;
+
+    public SettingsViewModel(IApp app, ISettingsService settingsService)
     {
+        if (SynchronizationContext.Current == null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        this.settingsService = settingsService.NotNull();
+
+        Info = app.NotNull().Info;
+
+        this.settingsService
+            .Theme
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => Theme = x)
+            .DisposeWith(disposable);
+
+        CloseCommand = new RelayCommand(_ => this.settingsService.Hide());
     }
 
+    public AppTheme Theme
+    {
+        get => theme;
+        set
+        {
+            if (Set(ref theme, value))
+            {
+                settingsService.SetTheme(value);
+            }
+        }
+    }
+
+    public ImmutableArray<AppTheme> Themes { get; } = ImmutableArray.Create(Enum.GetValues<AppTheme>());
+
     public bool RemainingTime { get; } = true;
+
+    public AppInfo Info { get; }
+
+    public ICommand CloseCommand { get; }
 }

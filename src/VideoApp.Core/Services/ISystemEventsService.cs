@@ -16,26 +16,9 @@
  *  along with VideoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace VideoApp.Commands;
+namespace VideoApp.Core.Services;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using VideoApp.Core;
-using VideoApp.Core.Commands;
-using VideoApp.Core.ViewModels;
-
-internal class SettingsCommand : CommandBase
+public interface ISystemEventsService
 {
-    private readonly IServiceProvider serviceProvider;
-
-    public SettingsCommand(IServiceProvider serviceProvider)
-    {
-        this.serviceProvider = serviceProvider.NotNull();
-    }
-
-    public override void Execute(object? parameter)
-    {
-
-    }
+    IObservable<bool> DarkTheme { get; }
 }

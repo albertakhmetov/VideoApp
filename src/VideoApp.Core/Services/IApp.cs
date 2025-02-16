@@ -18,8 +18,12 @@
  */
 namespace VideoApp.Core.Services;
 
+using VideoApp.Core.Models;
+
 public interface IApp
 {
+    AppInfo Info { get; }
+
     nint WindowHandle { get; }
 
     void Exit();

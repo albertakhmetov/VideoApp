@@ -361,7 +361,10 @@
                                     Icon="FullScreen"
                                     Text="Full Screen"
                                     Command="{x:Bind ViewModel.ToggleFullScreenCommand}"/>
-
+                                <MenuFlyoutItem
+                                    Text="Settings"
+                                    Command="{x:Bind ViewModel.SettingsCommand}"/>
+                                
                                 <MenuFlyoutSeparator/>
 
                                 <MenuFlyoutItem

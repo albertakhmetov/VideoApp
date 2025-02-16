@@ -27,7 +27,11 @@ public abstract class ObservableObject : INotifyPropertyChanged
 
     protected bool Set<T>(ref T property, T value, [CallerMemberName] string? propertyName = null)
     {
-        if (property is IEquatable<T> equatable && equatable.Equals(value))
+        if (property is Enum && property.Equals(value))
+        {
+            return false;
+        }
+        else if (property is IEquatable<T> equatable && equatable.Equals(value))
         {
             return false;
         }

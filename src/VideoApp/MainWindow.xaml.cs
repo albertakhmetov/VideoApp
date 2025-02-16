@@ -27,6 +27,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using VideoApp.Core;
+using VideoApp.Core.Models;
 using VideoApp.Core.Services;
 using VideoApp.Core.ViewModels;
 
@@ -36,21 +37,78 @@ public partial class MainWindow : Window
 {
     private readonly CompositeDisposable disposable = new CompositeDisposable();
 
+    private readonly ISystemEventsService systemEventsService;
     private readonly ISettingsService settingsService;
+    private readonly IPlaybackService playbackService;
+    private readonly UserControl player, settings;
 
-    public MainWindow(IServiceProvider serviceProvider, ISettingsService settingsService)
+    private bool resumePlaybackAfterSettings;
+
+    public MainWindow(
+        IServiceProvider serviceProvider,
+        ISystemEventsService systemEventsService,
+        ISettingsService settingsService,
+        IPlaybackService playbackService)
     {
+        if (SynchronizationContext.Current == null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        this.systemEventsService = systemEventsService.NotNull();
         this.settingsService = settingsService.NotNull();
+        this.playbackService = playbackService.NotNull();
+
         this.InitializeComponent();
 
-        Content = serviceProvider.NotNull().GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
+        player = serviceProvider.NotNull().GetRequiredKeyedService<UserControl>(nameof(PlayerViewModel));
+        settings = serviceProvider.NotNull().GetRequiredKeyedService<UserControl>(nameof(SettingsViewModel));
+        settings.Visibility = Visibility.Collapsed;
+
+        Root.Children.Add(player);
+        Root.Children.Add(settings);
+
+        this.settingsService
+            .UI
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => ToggleSettins(x))
+            .DisposeWith(disposable);
 
         this.settingsService
             .Theme
-            .Subscribe(x => UpdateTheme(x == Core.Models.AppTheme.Dark))
+            .CombineLatest(this.systemEventsService.DarkTheme.Select(x => x))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => UpdateTheme(x.First == AppTheme.System ? x.Second : (x.First == AppTheme.Dark)))
             .DisposeWith(disposable);
 
         this.Closed += (_, _) => disposable.Dispose();
+    }
+
+    private async void ToggleSettins(bool isVisible)
+    {
+        var state = await playbackService.State.FirstAsync();
+
+        if (isVisible)
+        {
+            resumePlaybackAfterSettings = state == PlaybackState.Playing;
+            if (resumePlaybackAfterSettings)
+            {
+                playbackService.Pause();
+            }
+
+            player.Visibility = Visibility.Collapsed;
+            settings.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            player.Visibility = Visibility.Visible;
+            settings.Visibility = Visibility.Collapsed;
+
+            if (resumePlaybackAfterSettings)
+            {
+                playbackService.Play();
+            }
+        }
     }
 
     private unsafe void UpdateTheme(bool isDarkTheme)

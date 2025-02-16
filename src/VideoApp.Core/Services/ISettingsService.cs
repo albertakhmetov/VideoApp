@@ -23,6 +23,8 @@ using VideoApp.Core.Models;
 
 public interface ISettingsService
 {
+    IObservable<bool> UI { get; }
+
     IObservable<AppTheme> Theme { get; }
 
     IObservable<bool> RemainingTime { get; }
@@ -30,4 +32,8 @@ public interface ISettingsService
     void SetTheme(AppTheme value);
 
     void SetRemainingTime(bool value);
+
+    void Show();
+
+    void Hide();
 }

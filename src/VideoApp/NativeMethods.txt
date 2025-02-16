@@ -3,3 +3,9 @@ SetThreadExecutionState
 SetForegroundWindow
 StrCmpLogical
 GetTickCount
+
+RegisterClass
+UnregisterClass
+CreateWindowEx
+DestroyWindow
+DefWindowProc

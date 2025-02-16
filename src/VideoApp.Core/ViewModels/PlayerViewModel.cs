@@ -35,12 +35,16 @@ public class PlayerViewModel : ViewModel, IDisposable
 
     private readonly IServiceProvider serviceProvider;
     private readonly IApp app;
+    private readonly ISettingsService settingsService;
     private readonly IPlaybackService playbackService;
 
-    private int volume;
     private PlaybackState state;
 
-    public PlayerViewModel(IServiceProvider serviceProvider, IApp app, IPlaybackService playbackService)
+    public PlayerViewModel(
+        IServiceProvider serviceProvider,
+        IApp app,
+        ISettingsService settingsService,
+        IPlaybackService playbackService)
     {
         if (SynchronizationContext.Current == null)
         {
@@ -49,24 +53,22 @@ public class PlayerViewModel : ViewModel, IDisposable
 
         this.serviceProvider = serviceProvider.NotNull();
         this.app = app.NotNull();
+        this.settingsService = settingsService.NotNull();
         this.playbackService = playbackService.NotNull();
 
-        playbackService
+        this.playbackService
             .State
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => State = x)
             .DisposeWith(disposable);
 
-        OpenMediaFileCommand = this.serviceProvider
-            .GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
+        OpenMediaFileCommand = this.serviceProvider.GetRequiredKeyedService<CommandBase>(nameof(OpenMediaFileCommand));
 
-
-        SettingsCommand = this.serviceProvider
-            .GetRequiredKeyedService<CommandBase>(nameof(SettingsCommand));
+        SettingsCommand = new RelayCommand(_ => this.settingsService.Show());
 
         ToggleFullScreenCommand = new RelayCommand(x => this.app.SetFullScreenMode(x is bool isEnabled ? isEnabled : null));
-        
+
         ExitCommand = new RelayCommand(_ => app.Exit());
 
         MruListViewModel = serviceProvider.GetRequiredService<MruListViewModel>();
@@ -74,8 +76,6 @@ public class PlayerViewModel : ViewModel, IDisposable
         TracksViewModel = serviceProvider.GetRequiredService<TracksViewModel>();
         PlaybackViewModel = serviceProvider.GetRequiredService<PlaybackViewModel>();
         StartupViewModel = serviceProvider.GetRequiredService<StartupViewModel>();
-
-        Settings = serviceProvider.GetRequiredService<SettingsViewModel>();
     }
 
     public PlaybackState State
@@ -101,8 +101,6 @@ public class PlayerViewModel : ViewModel, IDisposable
     public PlaybackViewModel PlaybackViewModel { get; }
 
     public StartupViewModel StartupViewModel { get; }
-
-    public SettingsViewModel Settings { get; }
 
     public void Dispose()
     {
