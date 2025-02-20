@@ -56,10 +56,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Controls\PlayerToolbarControl.xaml.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Remove="ControlStyles.xaml" />
 		<None Remove="CustomStyle.xaml" />
 		<None Remove="Views\ControlView.xaml" />
